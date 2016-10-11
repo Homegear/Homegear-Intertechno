@@ -54,7 +54,6 @@ std::string MyPacket::hexString()
 		if(!_packet.empty()) return _packet;
 		if(_senderAddress & 0xFFFFFC00)
 		{
-			std::cerr << "Moin" << std::hex << _senderAddress << std::dec << std::endl;
 			_packet.reserve(32);
 			for(int32_t i = 29; i >= 4; i--)
 			{
