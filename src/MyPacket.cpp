@@ -70,7 +70,7 @@ std::string MyPacket::hexString()
 			_packet.reserve(12);
 			for(int32_t i = 9; i >= 0; i--)
 			{
-				_packet.push_back(_senderAddress & (1 << i) ? '1' : '0');
+				_packet.push_back(_senderAddress & (1 << i) ? 'F' : '0');
 			}
 			_packet.insert(_packet.end(), _payload.begin(), _payload.end());
 		}
