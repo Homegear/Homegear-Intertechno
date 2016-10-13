@@ -305,6 +305,12 @@ std::string MyPeer::printConfig()
     return "";
 }
 
+std::string MyPeer::getPhysicalInterfaceId()
+{
+	if(_physicalInterfaceId.empty()) setPhysicalInterfaceId(GD::defaultPhysicalInterface->getID());
+	return _physicalInterfaceId;
+}
+
 void MyPeer::setPhysicalInterfaceId(std::string id)
 {
 	if(id.empty() || (GD::physicalInterfaces.find(id) != GD::physicalInterfaces.end() && GD::physicalInterfaces.at(id)))
@@ -441,8 +447,114 @@ bool MyPeer::load(BaseLib::Systems::ICentral* central)
     return false;
 }
 
+void MyPeer::setRssiDevice(uint8_t rssi)
+{
+	try
+	{
+		if(_disposing || rssi == 0) return;
+		uint32_t time = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+		if(valuesCentral.find(0) != valuesCentral.end() && valuesCentral.at(0).find("RSSI_DEVICE") != valuesCentral.at(0).end() && (time - _lastRssiDevice) > 10)
+		{
+			_lastRssiDevice = time;
+			BaseLib::Systems::RPCConfigurationParameter* parameter = &valuesCentral.at(0).at("RSSI_DEVICE");
+			parameter->data.at(0) = rssi;
+
+			std::shared_ptr<std::vector<std::string>> valueKeys(new std::vector<std::string>({std::string("RSSI_DEVICE")}));
+			std::shared_ptr<std::vector<PVariable>> rpcValues(new std::vector<PVariable>());
+			rpcValues->push_back(parameter->rpcParameter->convertFromPacket(parameter->data));
+
+			raiseEvent(_peerID, 0, valueKeys, rpcValues);
+			raiseRPCEvent(_peerID, 0, _serialNumber + ":0", valueKeys, rpcValues);
+		}
+	}
+	catch(const std::exception& ex)
+    {
+    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+}
+
 void MyPeer::packetReceived(PMyPacket& packet)
 {
+	try
+	{
+		if(!packet) return;
+		if(_disposing) return;
+		if(packet->senderAddress() != _address) return;
+		if(!_rpcDevice) return;
+		std::shared_ptr<MyCentral> central = std::dynamic_pointer_cast<MyCentral>(getCentral());
+		if(!central) return;
+		setLastPacketReceived();
+		setRssiDevice(packet->getRssi() * -1);
+		serviceMessages->endUnreach();
+
+
+		std::map<uint32_t, std::shared_ptr<std::vector<std::string>>> valueKeys;
+		std::map<uint32_t, std::shared_ptr<std::vector<PVariable>>> rpcValues;
+
+		std::unordered_map<uint32_t, std::unordered_map<std::string, BaseLib::Systems::RPCConfigurationParameter>>::iterator channelIterator;
+		std::unordered_map<std::string, BaseLib::Systems::RPCConfigurationParameter>::iterator parameterIterator;
+
+		std::string valueKey;
+		int32_t channel = 0;
+		std::string payload = packet->getPayload();
+
+		if(payload.at(0) == '1') valueKey = "GROUP_STATE";
+		else
+		{
+			valueKey = "STATE";
+			channel = packet->getChannel();
+		}
+
+		channelIterator = valuesCentral.find(channel);
+		if(channelIterator == valuesCentral.end()) return;
+		parameterIterator= channelIterator->second.find(valueKey);
+		if(parameterIterator == channelIterator->second.end()) return;
+
+		valueKeys[channel].reset(new std::vector<std::string>());
+		rpcValues[channel].reset(new std::vector<PVariable>());
+
+		parameterIterator->second.data = (payload.at(1) == '0') ? std::vector<uint8_t>{ 0 } : std::vector<uint8_t>{ 1 };
+		if(parameterIterator->second.databaseID > 0) saveParameter(parameterIterator->second.databaseID, parameterIterator->second.data);
+		else saveParameter(0, ParameterGroup::Type::Enum::variables, channel, valueKey, parameterIterator->second.data);
+		if(_bl->debugLevel >= 4) GD::out.printInfo("Info: " + valueKey + " on channel " + std::to_string(channel) + " of peer " + std::to_string(_peerID) + " with serial number " + _serialNumber  + " was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterIterator->second.data) + ".");
+
+		if(parameterIterator->second.rpcParameter)
+		{
+			valueKeys[channel]->push_back(valueKey);
+			rpcValues[channel]->push_back(parameterIterator->second.rpcParameter->convertFromPacket(parameterIterator->second.data, true));
+		}
+
+		if(!rpcValues.empty())
+		{
+			for(std::map<uint32_t, std::shared_ptr<std::vector<std::string>>>::const_iterator j = valueKeys.begin(); j != valueKeys.end(); ++j)
+			{
+				if(j->second->empty()) continue;
+				std::string address(_serialNumber + ":" + std::to_string(j->first));
+				raiseEvent(_peerID, j->first, j->second, rpcValues.at(j->first));
+				raiseRPCEvent(_peerID, j->first, address, j->second, rpcValues.at(j->first));
+			}
+		}
+	}
+	catch(const std::exception& ex)
+    {
+    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
 }
 
 PParameterGroup MyPeer::getParameterSet(int32_t channel, ParameterGroup::Type::Enum type)

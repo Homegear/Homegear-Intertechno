@@ -51,6 +51,9 @@ public:
 	virtual void sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet);
 protected:
 	std::unique_ptr<BaseLib::SerialReaderWriter> _serial;
+
+	void listen();
+	void processPacket(std::string& data);
 };
 
 }

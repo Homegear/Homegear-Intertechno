@@ -37,6 +37,52 @@ MyPacket::MyPacket()
 {
 }
 
+MyPacket::MyPacket(std::string& rawPacket)
+{
+	_timeReceived = BaseLib::HelperFunctions::getTime();
+	_packet = rawPacket.at(0) == 'i' && rawPacket.size() > 3 ? rawPacket.substr(1, rawPacket.size() - 3) : rawPacket;
+	_senderAddress = 0;
+
+	std::string rssiString = _packet.substr(_packet.size() - 2, 2);
+	int32_t rssiDevice = BaseLib::Math::getNumber(rssiString);
+	//1) Read the RSSI status register
+	//2) Convert the reading from a hexadecimal
+	//number to a decimal number (RSSI_dec)
+	//3) If RSSI_dec ≥ 128 then RSSI_dBm =
+	//(RSSI_dec - 256)/2 – RSSI_offset
+	//4) Else if RSSI_dec < 128 then RSSI_dBm =
+	//(RSSI_dec)/2 – RSSI_offset
+	if(rssiDevice >= 128) rssiDevice = ((rssiDevice - 256) / 2) - 74;
+	else rssiDevice = (rssiDevice / 2) - 74;
+	_rssi = (uint8_t)(rssiDevice * -1);
+
+	if(_packet.size() == 10)
+	{
+
+	}
+	else if(_packet.size() == 18)
+	{
+		_channel = 0;
+		_senderAddress = 0;
+		int32_t j = 0;
+		for(int32_t i = _packet.size() - 3; i >= (signed)_packet.size() - 4; i--)
+		{
+			_channel |= (parseNibble(_packet.at(i)) << j);
+			j += 2;
+		}
+		_channel++;
+
+		j = 0;
+		for(int32_t i = _packet.size() - 6; i >= 0; i--)
+		{
+			_senderAddress |= (parseNibble(_packet.at(i)) << j);
+			j += 2;
+		}
+
+		_payload = parseNibbleString(_packet.at(_packet.size() - 5));
+	}
+}
+
 MyPacket::MyPacket(int32_t senderAddress, std::string& payload) : _payload(payload)
 {
 	_senderAddress = senderAddress;
@@ -45,6 +91,38 @@ MyPacket::MyPacket(int32_t senderAddress, std::string& payload) : _payload(paylo
 MyPacket::~MyPacket()
 {
 	_payload.clear();
+}
+
+uint8_t MyPacket::parseNibble(char nibble)
+{
+	switch(nibble)
+	{
+		case '5':
+			return 0;
+		case '6':
+			return 1;
+		case '9':
+			return 2;
+		case 'A':
+			return 3;
+	}
+	return 0;
+}
+
+std::string MyPacket::parseNibbleString(char nibble)
+{
+	switch(nibble)
+	{
+		case '5':
+			return "00";
+		case '6':
+			return "01";
+		case '9':
+			return "10";
+		case 'A':
+			return "11";
+	}
+	return "00";
 }
 
 std::string MyPacket::hexString()

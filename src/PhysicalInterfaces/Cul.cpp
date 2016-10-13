@@ -69,6 +69,8 @@ void Cul::startListening()
 
 		_stopCallbackThread = false;
 		_stopped = false;
+		if(_settings->listenThreadPriority > -1) _bl->threadManager.start(_listenThread, true, _settings->listenThreadPriority, _settings->listenThreadPolicy, &Cul::listen, this);
+		else _bl->threadManager.start(_listenThread, true, &Cul::listen, this);
 		IPhysicalInterface::startListening();
 	}
     catch(const std::exception& ex)
@@ -94,6 +96,99 @@ void Cul::stopListening()
 		_stopped = true;
 		if(_serial) _serial->closeDevice();
 		IPhysicalInterface::stopListening();
+	}
+	catch(const std::exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+}
+
+void Cul::listen()
+{
+    try
+    {
+    	std::string data;
+    	data.reserve(100);
+    	int32_t result = 0;
+
+        while(!_stopCallbackThread)
+        {
+        	try
+        	{
+				if(_stopped || !_serial->isOpen())
+				{
+					if(_stopCallbackThread) return;
+					if(_stopped) _out.printWarning("Warning: Connection to device closed. Trying to reconnect...");
+					_serial->closeDevice();
+					std::this_thread::sleep_for(std::chrono::milliseconds(10000));
+					_serial->openDevice(false, false, false);
+					if(!_serial->isOpen())
+					{
+						_out.printError("Error: Could not open device.");
+						return;
+					}
+					continue;
+				}
+
+				result = _serial->readLine(data);
+				if(result == -1)
+				{
+					_out.printError("Error reading from serial device.");
+					_stopped = true;
+					continue;
+				}
+				else if(result == 1)
+				{
+					continue;
+				}
+
+				processPacket(data);
+				_lastPacketReceived = BaseLib::HelperFunctions::getTime();
+			}
+			catch(const std::exception& ex)
+			{
+				_out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+			}
+			catch(BaseLib::Exception& ex)
+			{
+				_out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+			}
+			catch(...)
+			{
+				_out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+			}
+        }
+    }
+    catch(const std::exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+}
+
+void Cul::processPacket(std::string& data)
+{
+	try
+	{
+		if(data.size() < 6 || data.at(0) != 'i') return;
+
+		PMyPacket packet(new MyPacket(data));
+		raisePacketReceived(packet);
 	}
 	catch(const std::exception& ex)
     {
