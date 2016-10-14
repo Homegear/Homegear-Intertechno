@@ -56,7 +56,7 @@ MyPacket::MyPacket(std::string& rawPacket)
 	else rssiDevice = (rssiDevice / 2) - 74;
 	_rssi = (uint8_t)(rssiDevice * -1);
 
-	if(_packet.size() == 10)
+	if(_packet.size() == 8)
 	{
 
 	}
