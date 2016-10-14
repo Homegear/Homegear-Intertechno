@@ -218,8 +218,14 @@ bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib:
 		PMyPacket myPacket(std::dynamic_pointer_cast<MyPacket>(packet));
 		if(!myPacket) return false;
 
+		if(GD::bl->debugLevel >= 4) std::cout << BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) << " Intertechno packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) << ": " << myPacket->getPayload() << std::endl;
+
 		PMyPeer peer = getPeer(myPacket->senderAddress());
-		if(!peer) return false;
+		if(!peer)
+		{
+			peer = getPeer((int32_t)(0x80000000 | myPacket->senderAddress()));
+			if(!peer) return false;
+		}
 		if(senderId != peer->getPhysicalInterfaceId()) return false;
 
 		peer->packetReceived(myPacket);

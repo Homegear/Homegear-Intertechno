@@ -39,13 +39,22 @@ class MyPacket : public BaseLib::Systems::Packet
 {
     public:
         MyPacket();
+        MyPacket(std::string& rawPacket);
         MyPacket(int32_t senderAddress, std::string& payload);
         virtual ~MyPacket();
 
+        int32_t getChannel() { return _channel; }
+        std::string getPayload() { return _payload; }
         std::string hexString();
+        uint8_t getRssi() { return _rssi; }
     protected:
         std::string _packet;
         std::string _payload;
+        int32_t _channel = -1;
+        uint8_t _rssi = 0;
+
+        uint8_t parseNibble(char nibble);
+        std::string parseNibbleString(char nibble);
 };
 
 typedef std::shared_ptr<MyPacket> PMyPacket;

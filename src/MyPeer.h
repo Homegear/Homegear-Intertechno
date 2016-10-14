@@ -55,7 +55,7 @@ public:
 	//End features
 
 	//{{{ In table variables
-	std::string getPhysicalInterfaceId() { return _physicalInterfaceId; }
+	std::string getPhysicalInterfaceId();
 	void setPhysicalInterfaceId(std::string);
 	//}}}
 
@@ -96,11 +96,13 @@ protected:
 
 	bool _shuttingDown = false;
 	std::shared_ptr<IIntertechnoInterface> _physicalInterface;
+	uint32_t _lastRssiDevice = 0;
 
 	virtual void loadVariables(BaseLib::Systems::ICentral* central, std::shared_ptr<BaseLib::Database::DataTable>& rows);
     virtual void saveVariables();
 
     virtual void setPhysicalInterface(std::shared_ptr<IIntertechnoInterface> interface);
+    void setRssiDevice(uint8_t rssi);
 
 	virtual std::shared_ptr<BaseLib::Systems::ICentral> getCentral();
 
