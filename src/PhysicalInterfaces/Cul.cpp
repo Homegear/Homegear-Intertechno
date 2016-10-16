@@ -47,6 +47,26 @@ Cul::~Cul()
 	stopListening();
 }
 
+void Cul::setup(int32_t userID, int32_t groupID)
+{
+    try
+    {
+    	setDevicePermission(userID, groupID);
+    }
+    catch(const std::exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+}
+
 void Cul::startListening()
 {
 	try
@@ -147,6 +167,10 @@ void Cul::listen()
 				}
 				else if(result == 1)
 				{
+					std::vector<std::string> data{ "i1045510D\r\n", "i1045540D\r\n", "i10515114\r\n", "i1051540D\r\n", "i1054510D\r\n", "i1054540D\r\n", "i1055110D\r\n", "i1055140D\r\n" };
+					int32_t index = BaseLib::HelperFunctions::getRandomNumber(0, 7);
+					processPacket(data.at(index));
+					_lastPacketReceived = BaseLib::HelperFunctions::getTime();
 					continue;
 				}
 

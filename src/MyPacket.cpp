@@ -58,7 +58,16 @@ MyPacket::MyPacket(std::string& rawPacket)
 
 	if(_packet.size() == 8)
 	{
+		_channel = 0;
+		_senderAddress = 0;
+		int32_t j = 0;
+		for(int32_t i = _packet.size() - 4; i >= 0; i--)
+		{
+			_senderAddress |= (parseNibbleSmall(_packet.at(i)) << j);
+			j += 2;
+		}
 
+		_payload = parseNibbleStringSmall(_packet.at(_packet.size() - 3));
 	}
 	else if(_packet.size() == 18)
 	{
@@ -121,6 +130,38 @@ std::string MyPacket::parseNibbleString(char nibble)
 			return "10";
 		case 'A':
 			return "11";
+	}
+	return "00";
+}
+
+uint8_t MyPacket::parseNibbleSmall(char nibble)
+{
+	switch(nibble)
+	{
+		case '0':
+			return 0;
+		case '1':
+			return 1;
+		case '4':
+			return 2;
+		case '5':
+			return 3;
+	}
+	return 0;
+}
+
+std::string MyPacket::parseNibbleStringSmall(char nibble)
+{
+	switch(nibble)
+	{
+		case '0':
+			return "00";
+		case '1':
+			return "0F";
+		case '4':
+			return "F0";
+		case '5':
+			return "FF";
 	}
 	return "00";
 }

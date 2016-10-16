@@ -45,7 +45,7 @@ public:
 
 	virtual void startListening();
 	virtual void stopListening();
-
+	virtual void setup(int32_t userID, int32_t groupID);
 	virtual bool isOpen() { return _serial && _serial->isOpen() && !_stopped; }
 
 	virtual void sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet);

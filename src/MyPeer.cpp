@@ -487,7 +487,6 @@ void MyPeer::packetReceived(PMyPacket& packet)
 	{
 		if(!packet) return;
 		if(_disposing) return;
-		if(packet->senderAddress() != _address) return;
 		if(!_rpcDevice) return;
 		std::shared_ptr<MyCentral> central = std::dynamic_pointer_cast<MyCentral>(getCentral());
 		if(!central) return;
