@@ -79,7 +79,8 @@ void Cul::startListening()
 			return;
 		}
 
-		_serial.reset(new BaseLib::SerialReaderWriter(_bl, _settings->device, 57600, 0, true, -1));
+		if(_settings->baudrate <= 0) _settings->baudrate = 57600;
+		_serial.reset(new BaseLib::SerialReaderWriter(_bl, _settings->device, _settings->baudrate, 0, true, -1));
 		_serial->openDevice(false, false, false);
 		if(!_serial->isOpen())
 		{
