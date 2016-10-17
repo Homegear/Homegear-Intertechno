@@ -171,6 +171,16 @@ void Cul::listen()
 					int32_t index = BaseLib::HelperFunctions::getRandomNumber(0, 7);
 					processPacket(data.at(index));
 					_lastPacketReceived = BaseLib::HelperFunctions::getTime();*/
+					/*if(BaseLib::HelperFunctions::getTimeSeconds() % 10 == 0)
+					{
+						std::vector<std::string> data{ "i4500140D\r\n", "i4500150D\r\n", "i4540140D\r\n", "i4540150D\r\n", "i4510140D\r\n", "i4510150D\r\n", "i4550140D\r\n", "i4550150D\r\n", "i4504140D\r\n", "i4504150D\r\n", "i4544140D\r\n", "i4544150D\r\n", "i4514140D\r\n", "i4514150D\r\n", "i4554140D\r\n", "i4554150D\r\n", "i4501140D\r\n", "i4501150D\r\n", "i4541140D\r\n", "i4541150D\r\n", "i4511140D\r\n", "i4511150D\r\n", "i4551140D\r\n", "i4551150D\r\n", "i4505140D\r\n", "i4505150D\r\n", "i4545140D\r\n", "i4545150D\r\n", "i4515140D\r\n", "i4515150D\r\n", "i4555140D\r\n", "i4555150D\r\n"  };
+						for(uint32_t i = 0; i < data.size(); i++)
+						{
+							processPacket(data.at(i));
+							_lastPacketReceived = BaseLib::HelperFunctions::getTime();
+						}
+						std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+					}*/
 					continue;
 				}
 

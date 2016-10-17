@@ -226,12 +226,11 @@ bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib:
 			for(auto peer : peers)
 			{
 				PMyPeer myPeer = std::dynamic_pointer_cast<MyPeer>(peer);
+				if(senderId != myPeer->getPhysicalInterfaceId()) return false;
 				if(myPeer->getDeviceType() == 0x24) //Elro
 				{
 					if(myPeer->getAddress() == (myPacket->senderAddress() >> 5))
 					{
-						if(senderId != myPeer->getPhysicalInterfaceId()) return false;
-
 						int32_t channel = (~myPacket->senderAddress()) & 0x1F;
 						switch(channel)
 						{
@@ -253,6 +252,88 @@ bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib:
 						default:
 							channel = 0;
 						}
+						myPacket->setChannel(channel);
+						myPeer->packetReceived(myPacket);
+						break;
+					}
+				}
+				else if(myPeer->getDeviceType() == 0x33) //Old Intertechno remote
+				{
+					int32_t groupCode = (myPacket->senderAddress() & 0x3C) >> 2;
+					int32_t groupStartCode = 0;
+					int32_t channel = 0;
+					switch(groupCode)
+					{
+					case 0:
+						channel = 1;
+						groupStartCode = 0;
+						break;
+					case 8:
+						channel = 2;
+						groupStartCode = 0;
+						break;
+					case 4:
+						channel = 3;
+						groupStartCode = 0;
+						break;
+					case 12:
+						channel = 4;
+						groupStartCode = 0;
+						break;
+					case 2:
+						channel = 1;
+						groupStartCode = 2;
+						break;
+					case 10:
+						channel = 2;
+						groupStartCode = 2;
+						break;
+					case 6:
+						channel = 3;
+						groupStartCode = 2;
+						break;
+					case 14:
+						channel = 4;
+						groupStartCode = 2;
+						break;
+					case 1:
+						channel = 1;
+						groupStartCode = 1;
+						break;
+					case 9:
+						channel = 2;
+						groupStartCode = 1;
+						break;
+					case 5:
+						channel = 3;
+						groupStartCode = 1;
+						break;
+					case 13:
+						channel = 4;
+						groupStartCode = 1;
+						break;
+					case 3:
+						channel = 1;
+						groupStartCode = 3;
+						break;
+					case 11:
+						channel = 2;
+						groupStartCode = 3;
+						break;
+					case 7:
+						channel = 3;
+						groupStartCode = 3;
+						break;
+					case 15:
+						channel = 4;
+						groupStartCode = 3;
+						break;
+					default:
+						channel = 0;
+					}
+
+					if(myPeer->getAddress() == (((myPacket->senderAddress() & 0x3C0) >> 2) | groupStartCode))
+					{
 						myPacket->setChannel(channel);
 						myPeer->packetReceived(myPacket);
 						break;
