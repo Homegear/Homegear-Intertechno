@@ -87,6 +87,8 @@ void Cul::startListening()
 			_out.printError("Error: Could not open device.");
 			return;
 		}
+		std::string listenPacket = "X21\r\n";
+		_serial->writeLine(listenPacket);
 
 		_stopCallbackThread = false;
 		_stopped = false;
@@ -156,6 +158,8 @@ void Cul::listen()
 						_out.printError("Error: Could not open device.");
 						return;
 					}
+					std::string listenPacket = "X21\r\n";
+					_serial->writeLine(listenPacket);
 					continue;
 				}
 
@@ -261,6 +265,8 @@ void Cul::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 				_out.printError("Error: Could not open device.");
 				return;
 			}
+			std::string listenPacket = "X21\r\n";
+			_serial->writeLine(listenPacket);
 		}
 
 		std::string hexString = "is" + myPacket->hexString() + "\n";
