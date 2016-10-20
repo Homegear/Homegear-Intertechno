@@ -218,17 +218,141 @@ bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib:
 		PMyPacket myPacket(std::dynamic_pointer_cast<MyPacket>(packet));
 		if(!myPacket) return false;
 
-		if(GD::bl->debugLevel >= 4) std::cout << BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) << " Intertechno packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) << ": " << myPacket->getPayload() << std::endl;
+		if(GD::bl->debugLevel >= 4) std::cout << BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) << " Intertechno packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) << " (RSSI: " << (((int32_t)myPacket->getRssi()) * -1) << " dBm): " << myPacket->getPayload() << std::endl;
 
-		PMyPeer peer = getPeer(myPacket->senderAddress());
-		if(!peer)
+		if(myPacket->getPayload().find('F') != std::string::npos)
 		{
-			peer = getPeer((int32_t)(0x80000000 | myPacket->senderAddress()));
-			if(!peer) return false;
-		}
-		if(senderId != peer->getPhysicalInterfaceId()) return false;
+			std::vector<std::shared_ptr<BaseLib::Systems::Peer>> peers = getPeers();
+			for(auto peer : peers)
+			{
+				PMyPeer myPeer = std::dynamic_pointer_cast<MyPeer>(peer);
+				if(senderId != myPeer->getPhysicalInterfaceId()) return false;
+				if(myPeer->getDeviceType() == 0x24) //Elro
+				{
+					if(myPeer->getAddress() == (myPacket->senderAddress() >> 5))
+					{
+						int32_t channel = (~myPacket->senderAddress()) & 0x1F;
+						switch(channel)
+						{
+						case 1:
+							channel = 5;
+							break;
+						case 2:
+							channel = 4;
+							break;
+						case 4:
+							channel = 3;
+							break;
+						case 8:
+							channel = 2;
+							break;
+						case 16:
+							channel = 1;
+							break;
+						default:
+							channel = 0;
+						}
+						myPacket->setChannel(channel);
+						myPeer->packetReceived(myPacket);
+						break;
+					}
+				}
+				else if(myPeer->getDeviceType() == 0x33) //Old Intertechno remote
+				{
+					int32_t groupCode = (myPacket->senderAddress() & 0x3C) >> 2;
+					int32_t groupStartCode = 0;
+					int32_t channel = 0;
+					switch(groupCode)
+					{
+					case 0:
+						channel = 1;
+						groupStartCode = 0;
+						break;
+					case 8:
+						channel = 2;
+						groupStartCode = 0;
+						break;
+					case 4:
+						channel = 3;
+						groupStartCode = 0;
+						break;
+					case 12:
+						channel = 4;
+						groupStartCode = 0;
+						break;
+					case 2:
+						channel = 1;
+						groupStartCode = 2;
+						break;
+					case 10:
+						channel = 2;
+						groupStartCode = 2;
+						break;
+					case 6:
+						channel = 3;
+						groupStartCode = 2;
+						break;
+					case 14:
+						channel = 4;
+						groupStartCode = 2;
+						break;
+					case 1:
+						channel = 1;
+						groupStartCode = 1;
+						break;
+					case 9:
+						channel = 2;
+						groupStartCode = 1;
+						break;
+					case 5:
+						channel = 3;
+						groupStartCode = 1;
+						break;
+					case 13:
+						channel = 4;
+						groupStartCode = 1;
+						break;
+					case 3:
+						channel = 1;
+						groupStartCode = 3;
+						break;
+					case 11:
+						channel = 2;
+						groupStartCode = 3;
+						break;
+					case 7:
+						channel = 3;
+						groupStartCode = 3;
+						break;
+					case 15:
+						channel = 4;
+						groupStartCode = 3;
+						break;
+					default:
+						channel = 0;
+					}
 
-		peer->packetReceived(myPacket);
+					if(myPeer->getAddress() == (((myPacket->senderAddress() & 0x3C0) >> 2) | groupStartCode))
+					{
+						myPacket->setChannel(channel);
+						myPeer->packetReceived(myPacket);
+						break;
+					}
+				}
+			}
+		}
+		else
+		{
+			PMyPeer peer = getPeer(myPacket->senderAddress());
+			if(!peer)
+			{
+				peer = getPeer((int32_t)(0x80000000 | myPacket->senderAddress()));
+				if(!peer) return false;
+			}
+			if(senderId != peer->getPhysicalInterfaceId()) return false;
+
+			peer->packetReceived(myPacket);
+		}
 	}
 	catch(const std::exception& ex)
     {

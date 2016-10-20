@@ -44,6 +44,7 @@ class MyPacket : public BaseLib::Systems::Packet
         virtual ~MyPacket();
 
         int32_t getChannel() { return _channel; }
+        void setChannel(int32_t value) { _channel = value; }
         std::string getPayload() { return _payload; }
         std::string hexString();
         uint8_t getRssi() { return _rssi; }
@@ -55,6 +56,8 @@ class MyPacket : public BaseLib::Systems::Packet
 
         uint8_t parseNibble(char nibble);
         std::string parseNibbleString(char nibble);
+        uint8_t parseNibbleSmall(char nibble);
+        std::string parseNibbleStringSmall(char nibble);
 };
 
 typedef std::shared_ptr<MyPacket> PMyPacket;

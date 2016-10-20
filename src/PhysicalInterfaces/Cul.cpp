@@ -47,6 +47,26 @@ Cul::~Cul()
 	stopListening();
 }
 
+void Cul::setup(int32_t userID, int32_t groupID)
+{
+    try
+    {
+    	setDevicePermission(userID, groupID);
+    }
+    catch(const std::exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+        _out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+}
+
 void Cul::startListening()
 {
 	try
@@ -59,13 +79,16 @@ void Cul::startListening()
 			return;
 		}
 
-		_serial.reset(new BaseLib::SerialReaderWriter(_bl, _settings->device, 57600, 0, true, -1));
+		if(_settings->baudrate <= 0) _settings->baudrate = 57600;
+		_serial.reset(new BaseLib::SerialReaderWriter(_bl, _settings->device, _settings->baudrate, 0, true, -1));
 		_serial->openDevice(false, false, false);
 		if(!_serial->isOpen())
 		{
 			_out.printError("Error: Could not open device.");
 			return;
 		}
+		std::string listenPacket = "X21\r\n";
+		_serial->writeLine(listenPacket);
 
 		_stopCallbackThread = false;
 		_stopped = false;
@@ -135,6 +158,8 @@ void Cul::listen()
 						_out.printError("Error: Could not open device.");
 						return;
 					}
+					std::string listenPacket = "X21\r\n";
+					_serial->writeLine(listenPacket);
 					continue;
 				}
 
@@ -147,6 +172,20 @@ void Cul::listen()
 				}
 				else if(result == 1)
 				{
+					/*std::vector<std::string> data{ "i1045510D\r\n", "i1045540D\r\n", "i10515114\r\n", "i1051540D\r\n", "i1054510D\r\n", "i1054540D\r\n", "i1055110D\r\n", "i1055140D\r\n" };
+					int32_t index = BaseLib::HelperFunctions::getRandomNumber(0, 7);
+					processPacket(data.at(index));
+					_lastPacketReceived = BaseLib::HelperFunctions::getTime();*/
+					/*if(BaseLib::HelperFunctions::getTimeSeconds() % 10 == 0)
+					{
+						std::vector<std::string> data{ "i4500140D\r\n", "i4500150D\r\n", "i4540140D\r\n", "i4540150D\r\n", "i4510140D\r\n", "i4510150D\r\n", "i4550140D\r\n", "i4550150D\r\n", "i4504140D\r\n", "i4504150D\r\n", "i4544140D\r\n", "i4544150D\r\n", "i4514140D\r\n", "i4514150D\r\n", "i4554140D\r\n", "i4554150D\r\n", "i4501140D\r\n", "i4501150D\r\n", "i4541140D\r\n", "i4541150D\r\n", "i4511140D\r\n", "i4511150D\r\n", "i4551140D\r\n", "i4551150D\r\n", "i4505140D\r\n", "i4505150D\r\n", "i4545140D\r\n", "i4545150D\r\n", "i4515140D\r\n", "i4515150D\r\n", "i4555140D\r\n", "i4555150D\r\n"  };
+						for(uint32_t i = 0; i < data.size(); i++)
+						{
+							processPacket(data.at(i));
+							_lastPacketReceived = BaseLib::HelperFunctions::getTime();
+						}
+						std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+					}*/
 					continue;
 				}
 
@@ -226,6 +265,8 @@ void Cul::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 				_out.printError("Error: Could not open device.");
 				return;
 			}
+			std::string listenPacket = "X21\r\n";
+			_serial->writeLine(listenPacket);
 		}
 
 		std::string hexString = "is" + myPacket->hexString() + "\n";
