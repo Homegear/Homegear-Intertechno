@@ -484,9 +484,10 @@ std::string MyCentral::handleCliCommand(std::string command)
 			}
 
 			std::string interfaceId = arguments.at(0);
+			if(GD::physicalInterfaces.find(interfaceId) == GD::physicalInterfaces.end()) return "Unknown physical interface.\n";
 			int32_t deviceType = BaseLib::Math::getNumber(arguments.at(1), true);
 			if(deviceType == 0) return "Invalid device type. Device type has to be provided in hexadecimal format.\n";
-			int32_t address = BaseLib::Math::getNumber(arguments.at(2), true);
+			int32_t address = BaseLib::Math::getNumber(arguments.at(2));
 			std::string serial = "ITD" + BaseLib::HelperFunctions::getHexString(address, 8);
 
 			if(peerExists(serial) || peerExists(address)) stringStream << "A peer with this address is already paired to this central." << std::endl;
