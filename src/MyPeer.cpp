@@ -319,6 +319,11 @@ void MyPeer::setPhysicalInterfaceId(std::string id)
 		setPhysicalInterface(id.empty() ? GD::defaultPhysicalInterface : GD::physicalInterfaces.at(_physicalInterfaceId));
 		saveVariable(19, _physicalInterfaceId);
 	}
+	else
+	{
+		setPhysicalInterface(GD::defaultPhysicalInterface);
+		saveVariable(19, _physicalInterfaceId);
+	}
 }
 
 void MyPeer::setPhysicalInterface(std::shared_ptr<IIntertechnoInterface> interface)
