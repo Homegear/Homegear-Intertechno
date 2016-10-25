@@ -46,6 +46,7 @@ class MyPacket : public BaseLib::Systems::Packet
         int32_t getChannel() { return _channel; }
         void setChannel(int32_t value) { _channel = value; }
         std::string getPayload() { return _payload; }
+        void setPacket(std::string& value) { _packet = value; }
         std::string hexString();
         uint8_t getRssi() { return _rssi; }
     protected:

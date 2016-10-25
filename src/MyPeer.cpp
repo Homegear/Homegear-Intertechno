@@ -770,9 +770,27 @@ PVariable MyPeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t channel,
 		if(valueKey == "STATE")
 		{
 			std::string payload;
-			if(value->booleanValue) payload = (_address & 0xFFFFFC00) ? "01" : "FF";
-			else payload = (_address & 0xFFFFFC00) ? "00" : "F0";
-			packet.reset(new MyPacket(_address, payload));
+			if(getDeviceType() == 2) //REV Ritter
+			{
+				//Manually create packet
+				std::string packetString;
+				packetString.reserve(12);
+				for(int32_t i = 9; i >= 0; i--)
+				{
+					if(i == 2) packetString.push_back('0');
+					else packetString.push_back(_address & (1 << i) ? 'F' : '1');
+				}
+				payload = value->booleanValue ? "FF" : "00";
+				packetString.insert(packetString.end(), payload.begin(), payload.end());
+				packet.reset(new MyPacket());
+				packet->setPacket(packetString);
+			}
+			else
+			{
+				if(value->booleanValue) payload = (_address & 0xFFFFFC00) ? "01" : "FF";
+				else payload = (_address & 0xFFFFFC00) ? "00" : "F0";
+				packet.reset(new MyPacket(_address, payload));
+			}
 		}
 		if(valueKey == "GROUP_STATE")
 		{
