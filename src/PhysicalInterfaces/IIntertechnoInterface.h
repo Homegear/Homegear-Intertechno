@@ -46,7 +46,7 @@ public:
 
 	virtual void sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet) {}
 protected:
-	BaseLib::Obj* _bl = nullptr;
+	BaseLib::SharedObjects* _bl = nullptr;
 	BaseLib::Output _out;
 };
 

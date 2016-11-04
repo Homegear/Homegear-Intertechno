@@ -3,7 +3,7 @@
 	<supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
 		<device id="IT-Remote-6">
 			<description>Intertechno 6-channel Remote</description>
-			<typeNumber>0x16</typeNumber>
+			<typeNumber>0x15</typeNumber>
 		</device>
 	</supportedDevices>
 	<functions xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
