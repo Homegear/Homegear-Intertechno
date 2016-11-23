@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
 	<supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
-		<device id="IT-Remote-6">
-			<description>Intertechno 6-channel Remote</description>
-			<typeNumber>0x15</typeNumber>
+		<device id="REV-Ritter-Switch">
+			<description>REV Ritter Switch</description>
+			<typeNumber>2</typeNumber>
 		</device>
 	</supportedDevices>
 	<functions xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
@@ -14,7 +14,7 @@
 			<configParameters>IntertechnoConfig</configParameters>
 			<variables>maint_ch_values</variables>
 		</function>
-		<function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" channelCount="6" type="IntertechnoRemote">
+		<function xmlns="https://homegear.eu/xmlNamespaces/FunctionGroupType" channel="1" type="IntertechnoSwitch">
 			<variables>IntertechnoVariables</variables>
 		</function>
 	</functions>
@@ -53,22 +53,12 @@
 					<operationType>internal</operationType>
 				</physicalInteger>
 			</parameter>
-			<parameter id="GROUP_STATE">
-				<properties>
-					<readable>true</readable>
-					<writeable>false</writeable>
-				</properties>
-				<logicalBoolean/>
-				<physicalNone groupId="GROUP_STATE">
-					<operationType>command</operationType>
-				</physicalNone>
-			</parameter>
 		</variables>
 		<variables id="IntertechnoVariables">
 			<parameter id="STATE">
 				<properties>
 					<readable>true</readable>
-					<writeable>false</writeable>
+					<writeable>true</writeable>
 				</properties>
 				<logicalBoolean/>
 				<physicalNone groupId="STATE">
