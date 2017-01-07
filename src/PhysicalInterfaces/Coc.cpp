@@ -29,6 +29,7 @@
 
 #include "Coc.h"
 #include "../GD.h"
+#include "../MyPacket.h"
 
 namespace MyFamily
 {
@@ -87,7 +88,7 @@ void Coc::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 		std::vector<char> data;
 		data.insert(data.end(), hexString.begin(), hexString.end());
 
-		_out.printInfo("Info: Sending (" + _settings->id + "): " + packet->hexString());
+		_out.printInfo("Info: Sending (" + _settings->id + "): " + myPacket->hexString());
 
 		_socket->writeData(data);
 		_lastPacketSent = BaseLib::HelperFunctions::getTime();

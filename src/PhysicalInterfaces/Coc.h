@@ -30,7 +30,6 @@
 #ifndef COC_H
 #define COC_H
 
-#include "../MyPacket.h"
 #include <homegear-base/BaseLib.h>
 #include "IIntertechnoInterface.h"
 

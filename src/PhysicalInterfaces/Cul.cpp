@@ -35,7 +35,6 @@ namespace MyFamily
 
 Cul::Cul(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings) : IIntertechnoInterface(settings)
 {
-	_settings = settings;
 	_out.init(GD::bl);
 	_out.setPrefix(GD::out.getPrefix() + "Intertechno CUL \"" + settings->id + "\": ");
 
@@ -278,7 +277,7 @@ void Cul::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 		std::vector<char> data;
 		data.insert(data.end(), hexString.begin(), hexString.end());
 
-		_out.printInfo("Info: Sending (" + _settings->id + "): " + packet->hexString());
+		_out.printInfo("Info: Sending (" + _settings->id + "): " + myPacket->hexString());
 
 		_serial->writeData(data);
 		_lastPacketSent = BaseLib::HelperFunctions::getTime();
