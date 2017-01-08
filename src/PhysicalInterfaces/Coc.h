@@ -27,35 +27,37 @@
  * files in the program, then also delete it here.
  */
 
-#ifndef CUL_H_
-#define CUL_H_
+#ifndef COC_H
+#define COC_H
 
-#include "../MyPacket.h"
 #include <homegear-base/BaseLib.h>
 #include "IIntertechnoInterface.h"
 
 namespace MyFamily
 {
 
-class Cul : public IIntertechnoInterface
+class Coc : public IIntertechnoInterface, public BaseLib::SerialReaderWriter::ISerialReaderWriterEventSink
 {
-public:
-	Cul(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings);
-	virtual ~Cul();
+    public:
+		Coc(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings);
+        virtual ~Coc();
+        void startListening();
+        void stopListening();
+        virtual void setup(int32_t userID, int32_t groupID, bool setPermissions);
+        bool isOpen() { return _socket && _socket->isOpen(); }
+        
+        void sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet);
+    protected:
+        // {{{ Event handling
+        BaseLib::PEventHandler _eventHandlerSelf;
+        virtual void lineReceived(const std::string& data);
+        // }}}
 
-	virtual void startListening();
-	virtual void stopListening();
-	virtual void setup(int32_t userID, int32_t groupID, bool setPermissions);
-	virtual bool isOpen() { return _serial && _serial->isOpen() && !_stopped; }
-
-	virtual void sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet);
-protected:
-	std::unique_ptr<BaseLib::SerialReaderWriter> _serial;
-
-	void listen();
-	void processPacket(std::string& data);
+        BaseLib::Output _out;
+        std::shared_ptr<BaseLib::SerialReaderWriter> _socket;
+        std::string _stackPrefix;
+    private:
 };
 
 }
-
 #endif

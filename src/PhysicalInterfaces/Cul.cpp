@@ -35,7 +35,6 @@ namespace MyFamily
 
 Cul::Cul(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings) : IIntertechnoInterface(settings)
 {
-	_settings = settings;
 	_out.init(GD::bl);
 	_out.setPrefix(GD::out.getPrefix() + "Intertechno CUL \"" + settings->id + "\": ");
 
@@ -47,11 +46,11 @@ Cul::~Cul()
 	stopListening();
 }
 
-void Cul::setup(int32_t userID, int32_t groupID)
+void Cul::setup(int32_t userID, int32_t groupID, bool setPermissions)
 {
     try
     {
-    	setDevicePermission(userID, groupID);
+    	if(setPermissions) setDevicePermission(userID, groupID);
     }
     catch(const std::exception& ex)
     {
@@ -224,7 +223,12 @@ void Cul::processPacket(std::string& data)
 {
 	try
 	{
-		if(data.size() < 6 || data.at(0) != 'i') return;
+		if(data.size() < 6 || data.at(0) != 'i')
+		{
+		    if(data == "LOVF\n") _out.printWarning("Warning: CUL with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
+            return;
+        }
+
 
 		PMyPacket packet(new MyPacket(data));
 		raisePacketReceived(packet);
@@ -273,9 +277,10 @@ void Cul::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 		std::vector<char> data;
 		data.insert(data.end(), hexString.begin(), hexString.end());
 
-		_out.printInfo("Info: Sending (" + _settings->id + "): " + packet->hexString());
+		_out.printInfo("Info: Sending (" + _settings->id + "): " + myPacket->hexString());
 
 		_serial->writeData(data);
+		_lastPacketSent = BaseLib::HelperFunctions::getTime();
 	}
 	catch(const std::exception& ex)
     {

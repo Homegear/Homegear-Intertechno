@@ -30,6 +30,8 @@
 #include "Interfaces.h"
 #include "GD.h"
 #include "PhysicalInterfaces/Cul.h"
+#include "PhysicalInterfaces/Coc.h"
+#include "PhysicalInterfaces/Cunx.h"
 
 namespace MyFamily
 {
@@ -53,6 +55,8 @@ void Interfaces::create()
 			if(!i->second) continue;
 			GD::out.printDebug("Debug: Creating physical device. Type defined in intertechno.conf is: " + i->second->type);
 			if(i->second->type == "cul") device.reset(new Cul(i->second));
+			else if(i->second->type == "coc") device.reset(new Coc(i->second));
+			else if(i->second->type == "cunx") device.reset(new Cunx(i->second));
 			else GD::out.printError("Error: Unsupported physical device type: " + i->second->type);
 			if(device)
 			{
