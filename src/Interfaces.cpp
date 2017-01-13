@@ -32,6 +32,7 @@
 #include "PhysicalInterfaces/Cul.h"
 #include "PhysicalInterfaces/Coc.h"
 #include "PhysicalInterfaces/Cunx.h"
+#include "PhysicalInterfaces/TiCc1100.h"
 
 namespace MyFamily
 {
@@ -57,6 +58,9 @@ void Interfaces::create()
 			if(i->second->type == "cul") device.reset(new Cul(i->second));
 			else if(i->second->type == "coc") device.reset(new Coc(i->second));
 			else if(i->second->type == "cunx") device.reset(new Cunx(i->second));
+#ifdef SPIINTERFACES
+			else if(i->second->type == "cc1100") device.reset(new TiCc1100(i->second));
+#endif
 			else GD::out.printError("Error: Unsupported physical device type: " + i->second->type);
 			if(device)
 			{
