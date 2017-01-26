@@ -136,6 +136,7 @@ void Coc::startListening()
 		}
 		std::string listenPacket = "X21\r\n";
 		_socket->writeLine(listenPacket);
+		if(!_additionalCommands.empty()) _socket->writeLine(_additionalCommands);
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 		IPhysicalInterface::startListening();
 	}
