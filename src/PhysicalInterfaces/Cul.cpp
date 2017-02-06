@@ -88,6 +88,7 @@ void Cul::startListening()
 		}
 		std::string listenPacket = "X21\r\n";
 		_serial->writeLine(listenPacket);
+		if(!_additionalCommands.empty()) _serial->writeLine(_additionalCommands);
 
 		_stopCallbackThread = false;
 		_stopped = false;
@@ -159,6 +160,7 @@ void Cul::listen()
 					}
 					std::string listenPacket = "X21\r\n";
 					_serial->writeLine(listenPacket);
+					if(!_additionalCommands.empty()) _serial->writeLine(_additionalCommands);
 					continue;
 				}
 
@@ -271,6 +273,7 @@ void Cul::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 			}
 			std::string listenPacket = "X21\r\n";
 			_serial->writeLine(listenPacket);
+			if(!_additionalCommands.empty()) _serial->writeLine(_additionalCommands);
 		}
 
 		std::string hexString = "is" + myPacket->hexString() + "\n";

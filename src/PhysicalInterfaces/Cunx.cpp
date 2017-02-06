@@ -175,6 +175,7 @@ void Cunx::reconnect()
 		_ipAddress = _socket->getIpAddress();
 		_stopped = false;
 		send("X21\r\n");
+		if(!_additionalCommands.empty()) send(_additionalCommands);
 		_out.printInfo("Connected to CUNX device with hostname " + _settings->host + " on port " + _settings->port + ".");
 	}
     catch(const std::exception& ex)
