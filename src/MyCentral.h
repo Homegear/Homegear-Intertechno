@@ -1,4 +1,4 @@
-/* Copyright 2013-2016 Sathya Laufer
+/* Copyright 2013-2017 Sathya Laufer
  *
  * Homegear is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,6 +71,8 @@ protected:
 	virtual void saveVariables() {}
 	std::shared_ptr<MyPeer> createPeer(uint32_t deviceType, int32_t address, std::string serialNumber, bool save = true);
 	void deletePeer(uint64_t id);
+
+	std::pair<int32_t, int32_t> getOldItGroupStartCodeAndChannel(int32_t address);
 };
 
 }
