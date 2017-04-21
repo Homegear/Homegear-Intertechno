@@ -1,4 +1,4 @@
-/* Copyright 2013-2016 Sathya Laufer
+/* Copyright 2013-2017 Sathya Laufer
  *
  * Homegear is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -210,6 +210,101 @@ std::shared_ptr<MyPeer> MyCentral::getPeer(std::string serialNumber)
     return std::shared_ptr<MyPeer>();
 }
 
+std::pair<int32_t, int32_t> MyCentral::getOldItGroupStartCodeAndChannel(int32_t address)
+{
+	std::pair<int32_t, int32_t> returnValue(0, 0);
+	try
+	{
+		int32_t groupCode = (address & 0x3C) >> 2;
+		int32_t groupStartCode = 0;
+		int32_t channel = 0;
+		switch(groupCode)
+		{
+		case 0:
+			channel = 1;
+			groupStartCode = 0;
+			break;
+		case 8:
+			channel = 2;
+			groupStartCode = 0;
+			break;
+		case 4:
+			channel = 3;
+			groupStartCode = 0;
+			break;
+		case 12:
+			channel = 4;
+			groupStartCode = 0;
+			break;
+		case 2:
+			channel = 1;
+			groupStartCode = 2;
+			break;
+		case 10:
+			channel = 2;
+			groupStartCode = 2;
+			break;
+		case 6:
+			channel = 3;
+			groupStartCode = 2;
+			break;
+		case 14:
+			channel = 4;
+			groupStartCode = 2;
+			break;
+		case 1:
+			channel = 1;
+			groupStartCode = 1;
+			break;
+		case 9:
+			channel = 2;
+			groupStartCode = 1;
+			break;
+		case 5:
+			channel = 3;
+			groupStartCode = 1;
+			break;
+		case 13:
+			channel = 4;
+			groupStartCode = 1;
+			break;
+		case 3:
+			channel = 1;
+			groupStartCode = 3;
+			break;
+		case 11:
+			channel = 2;
+			groupStartCode = 3;
+			break;
+		case 7:
+			channel = 3;
+			groupStartCode = 3;
+			break;
+		case 15:
+			channel = 4;
+			groupStartCode = 3;
+			break;
+		default:
+			channel = 0;
+		}
+		returnValue.first = groupStartCode;
+		returnValue.second = channel;
+	}
+	catch(const std::exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+    return returnValue;
+}
+
 bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib::Systems::Packet> packet)
 {
 	try
@@ -257,89 +352,28 @@ bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib:
 						break;
 					}
 				}
+				else if(myPeer->getDeviceType() == 0x30) //Old Intertechno 1 channel sensor
+				{
+					if(myPeer->getAddress() == (myPacket->senderAddress() >> 2))
+					{
+						myPacket->setChannel(1);
+						myPeer->packetReceived(myPacket);
+						break;
+					}
+				}
 				else if(myPeer->getDeviceType() == 0x33) //Old Intertechno remote
 				{
-					int32_t groupCode = (myPacket->senderAddress() & 0x3C) >> 2;
-					int32_t groupStartCode = 0;
-					int32_t channel = 0;
-					switch(groupCode)
-					{
-					case 0:
-						channel = 1;
-						groupStartCode = 0;
-						break;
-					case 8:
-						channel = 2;
-						groupStartCode = 0;
-						break;
-					case 4:
-						channel = 3;
-						groupStartCode = 0;
-						break;
-					case 12:
-						channel = 4;
-						groupStartCode = 0;
-						break;
-					case 2:
-						channel = 1;
-						groupStartCode = 2;
-						break;
-					case 10:
-						channel = 2;
-						groupStartCode = 2;
-						break;
-					case 6:
-						channel = 3;
-						groupStartCode = 2;
-						break;
-					case 14:
-						channel = 4;
-						groupStartCode = 2;
-						break;
-					case 1:
-						channel = 1;
-						groupStartCode = 1;
-						break;
-					case 9:
-						channel = 2;
-						groupStartCode = 1;
-						break;
-					case 5:
-						channel = 3;
-						groupStartCode = 1;
-						break;
-					case 13:
-						channel = 4;
-						groupStartCode = 1;
-						break;
-					case 3:
-						channel = 1;
-						groupStartCode = 3;
-						break;
-					case 11:
-						channel = 2;
-						groupStartCode = 3;
-						break;
-					case 7:
-						channel = 3;
-						groupStartCode = 3;
-						break;
-					case 15:
-						channel = 4;
-						groupStartCode = 3;
-						break;
-					default:
-						channel = 0;
-					}
+					std::pair<int32_t, int32_t> startCodeAndChannel = getOldItGroupStartCodeAndChannel(myPacket->senderAddress());
 
-					if(myPeer->getAddress() == (((myPacket->senderAddress() & 0x3C0) >> 2) | groupStartCode))
+					if(myPeer->getAddress() == (((myPacket->senderAddress() & 0x3C0) >> 2) | startCodeAndChannel.first))
 					{
-						myPacket->setChannel(channel);
+						myPacket->setChannel(startCodeAndChannel.second);
 						myPeer->packetReceived(myPacket);
 						break;
 					}
 				}
 			}
+			if(GD::bl->debugLevel >= 4) std::cout << BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) << " Please use one of the following addresses for device creation: Intertechno multi-channel remote or sensor (use device type 0x33): 0x" << BaseLib::HelperFunctions::getHexString(((myPacket->senderAddress() & 0x3C0) >> 2) | getOldItGroupStartCodeAndChannel(myPacket->senderAddress()).first, 4) << "; Intertechno one channel remote or sensor (use device type 0x30): 0x" << BaseLib::HelperFunctions::getHexString(myPacket->senderAddress() >> 2, 4) << "; Elro (use device type 0x24): 0x" << BaseLib::HelperFunctions::getHexString(myPacket->senderAddress() >> 5, 4) << std::endl;
 		}
 		else
 		{
@@ -352,6 +386,7 @@ bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib:
 			if(senderId != peer->getPhysicalInterfaceId()) return false;
 
 			peer->packetReceived(myPacket);
+			if(GD::bl->debugLevel >= 4) std::cout << BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) << " Please use one of the following addresses for device creation (possible device types: 0x10 to 0x1F): 0x" << BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) << " or 0x" << BaseLib::HelperFunctions::getHexString((int32_t)(0x80000000 | myPacket->senderAddress()), 8) << std::endl;
 		}
 	}
 	catch(const std::exception& ex)
