@@ -786,6 +786,7 @@ PVariable MyPeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t channel,
 		if(parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
 		else saveParameter(0, ParameterGroup::Type::Enum::variables, channel, valueKey, parameterData);
 		if(_bl->debugLevel >= 4) GD::out.printInfo("Info: " + valueKey + " of peer " + std::to_string(_peerID) + " with serial number " + _serialNumber + ":" + std::to_string(channel) + " was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
+		value = rpcParameter->convertFromPacket(parameterData, false);
 
 		PMyPacket packet;
 		if(valueKey == "STATE")
