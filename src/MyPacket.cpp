@@ -174,7 +174,7 @@ std::string MyPacket::hexString()
 		if(_senderAddress & 0xFFFFFC00)
 		{
 			_packet.reserve(32);
-			for(int32_t i = 29; i >= 4; i--)
+			for(int32_t i = 25; i >= 0; i--)
 			{
 				_packet.push_back(_senderAddress & (1 << i) ? '1' : '0');
 			}
