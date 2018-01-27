@@ -84,7 +84,7 @@ std::shared_ptr<BaseLib::Systems::ICentral> MyFamily::initializeCentral(uint32_t
 	return std::shared_ptr<MyCentral>(new MyCentral(deviceId, serialNumber, this));
 }
 
-PVariable MyFamily::getPairingMethods()
+PVariable MyFamily::getPairingInfo()
 {
 	try
 	{
