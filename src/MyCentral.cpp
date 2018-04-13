@@ -450,7 +450,8 @@ void MyCentral::deletePeer(uint64_t id)
 			channels->arrayValue->push_back(PVariable(new Variable(i->first)));
 		}
 
-		raiseRPCDeleteDevices(deviceAddresses, deviceInfo);
+		std::vector<uint64_t> deletedIds{ id };
+		raiseRPCDeleteDevices(deletedIds, deviceAddresses, deviceInfo);
 
 		{
 			std::lock_guard <std::mutex> peersGuard(_peersMutex);
@@ -574,7 +575,8 @@ std::string MyCentral::handleCliCommand(std::string command)
 
 				PVariable deviceDescriptions(new Variable(VariableType::tArray));
 				deviceDescriptions->arrayValue = peer->getDeviceDescriptions(nullptr, true, std::map<std::string, bool>());
-				raiseRPCNewDevices(deviceDescriptions);
+				std::vector<uint64_t> newIds{ peer->getID() };
+				raiseRPCNewDevices(newIds, deviceDescriptions);
 				GD::out.printMessage("Added peer " + std::to_string(peer->getID()) + ".");
 				stringStream << "Added peer " << std::to_string(peer->getID()) << " with address 0x" << BaseLib::HelperFunctions::getHexString(address, 8) << " and serial number " << serial << "." << std::dec << std::endl;
 			}
@@ -922,7 +924,8 @@ PVariable MyCentral::createDevice(BaseLib::PRpcClientInfo clientInfo, int32_t de
 
 		PVariable deviceDescriptions(new Variable(VariableType::tArray));
 		deviceDescriptions->arrayValue = peer->getDeviceDescriptions(clientInfo, true, std::map<std::string, bool>());
-		raiseRPCNewDevices(deviceDescriptions);
+		std::vector<uint64_t> newIds{ peer->getID() };
+		raiseRPCNewDevices(newIds, deviceDescriptions);
 		GD::out.printMessage("Added peer " + std::to_string(peer->getID()) + ".");
 
 		return PVariable(new Variable((uint32_t)peer->getID()));
@@ -981,110 +984,6 @@ PVariable MyCentral::deleteDevice(BaseLib::PRpcClientInfo clientInfo, uint64_t p
 		if(peerExists(id)) return Variable::createError(-1, "Error deleting peer. See log for more details.");
 
 		return PVariable(new Variable(VariableType::tVoid));
-	}
-	catch(const std::exception& ex)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-    catch(BaseLib::Exception& ex)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-    catch(...)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
-    }
-    return Variable::createError(-32500, "Unknown application error.");
-}
-
-PVariable MyCentral::getDeviceInfo(BaseLib::PRpcClientInfo clientInfo, uint64_t id, std::map<std::string, bool> fields)
-{
-	try
-	{
-		if(id > 0)
-		{
-			std::shared_ptr<MyPeer> peer(getPeer(id));
-			if(!peer) return Variable::createError(-2, "Unknown device.");
-
-			return peer->getDeviceInfo(clientInfo, fields);
-		}
-		else
-		{
-			PVariable array(new Variable(VariableType::tArray));
-
-			std::vector<std::shared_ptr<MyPeer>> peers;
-			//Copy all peers first, because listDevices takes very long and we don't want to lock _peersMutex too long
-			_peersMutex.lock();
-			for(std::map<uint64_t, std::shared_ptr<BaseLib::Systems::Peer>>::iterator i = _peersById.begin(); i != _peersById.end(); ++i)
-			{
-				peers.push_back(std::dynamic_pointer_cast<MyPeer>(i->second));
-			}
-			_peersMutex.unlock();
-
-			for(std::vector<std::shared_ptr<MyPeer>>::iterator i = peers.begin(); i != peers.end(); ++i)
-			{
-				//listDevices really needs a lot of resources, so wait a little bit after each device
-				std::this_thread::sleep_for(std::chrono::milliseconds(3));
-				PVariable info = (*i)->getDeviceInfo(clientInfo, fields);
-				if(!info) continue;
-				array->arrayValue->push_back(info);
-			}
-
-			return array;
-		}
-	}
-	catch(const std::exception& ex)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-    catch(BaseLib::Exception& ex)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-    catch(...)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
-    }
-    return Variable::createError(-32500, "Unknown application error.");
-}
-
-PVariable MyCentral::putParamset(BaseLib::PRpcClientInfo clientInfo, std::string serialNumber, int32_t channel, ParameterGroup::Type::Enum type, std::string remoteSerialNumber, int32_t remoteChannel, PVariable paramset)
-{
-	try
-	{
-		std::shared_ptr<MyPeer> peer(getPeer(serialNumber));
-		uint64_t remoteID = 0;
-		if(!remoteSerialNumber.empty())
-		{
-			std::shared_ptr<MyPeer> remotePeer(getPeer(remoteSerialNumber));
-			if(!remotePeer) return Variable::createError(-3, "Remote peer is unknown.");
-			remoteID = remotePeer->getID();
-		}
-		if(peer) return peer->putParamset(clientInfo, channel, type, remoteID, remoteChannel, paramset);
-		return Variable::createError(-2, "Unknown device.");
-	}
-	catch(const std::exception& ex)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-    catch(BaseLib::Exception& ex)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-    catch(...)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
-    }
-    return Variable::createError(-32500, "Unknown application error.");
-}
-
-PVariable MyCentral::putParamset(BaseLib::PRpcClientInfo clientInfo, uint64_t peerID, int32_t channel, ParameterGroup::Type::Enum type, uint64_t remoteID, int32_t remoteChannel, PVariable paramset)
-{
-	try
-	{
-		std::shared_ptr<MyPeer> peer(getPeer(peerID));
-		if(peer) return peer->putParamset(clientInfo, channel, type, remoteID, remoteChannel, paramset);
-		return Variable::createError(-2, "Unknown device.");
 	}
 	catch(const std::exception& ex)
     {
