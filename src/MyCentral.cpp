@@ -462,12 +462,9 @@ void MyCentral::deletePeer(uint64_t id)
 			if(peerIterator != _peers.end() && peerIterator->second->getID() == id) _peers.erase(peerIterator);
 		}
 
-		if(_currentPeer && _currentPeer->getID() == id) _currentPeer.reset();
-
 		int32_t i = 0;
 		while(peer.use_count() > 1 && i < 600)
 		{
-			if(_currentPeer && _currentPeer->getID() == id) _currentPeer.reset();
 			std::this_thread::sleep_for(std::chrono::milliseconds(100));
 			i++;
 		}
@@ -498,16 +495,7 @@ std::string MyCentral::handleCliCommand(std::string command)
 		std::ostringstream stringStream;
 		std::vector<std::string> arguments;
 		bool showHelp = false;
-		if(_currentPeer)
-		{
-			if(BaseLib::HelperFunctions::checkCliCommand(command, "unselect", "u", "", 0, arguments, showHelp))
-			{
-				_currentPeer.reset();
-				return "Peer unselected.\n";
-			}
-			return _currentPeer->handleCliCommand(command);
-		}
-		else if(BaseLib::HelperFunctions::checkCliCommand(command, "help", "h", "", 0, arguments, showHelp))
+		if(BaseLib::HelperFunctions::checkCliCommand(command, "help", "h", "", 0, arguments, showHelp))
 		{
 			stringStream << "List of commands:" << std::endl << std::endl;
 			stringStream << "For more information about the individual command type: COMMAND help" << std::endl << std::endl;
@@ -599,7 +587,6 @@ std::string MyCentral::handleCliCommand(std::string command)
 			if(!peerExists(peerID)) stringStream << "This peer is not paired to this central." << std::endl;
 			else
 			{
-				if(_currentPeer && _currentPeer->getID() == peerID) _currentPeer.reset();
 				stringStream << "Removing peer " << std::to_string(peerID) << std::endl;
 				deletePeer(peerID);
 			}
@@ -796,47 +783,6 @@ std::string MyCentral::handleCliCommand(std::string command)
 				std::shared_ptr<MyPeer> peer = getPeer(peerID);
 				peer->setName(name);
 				stringStream << "Name set to \"" << name << "\"." << std::endl;
-			}
-			return stringStream.str();
-		}
-		else if(command.compare(0, 12, "peers select") == 0 || command.compare(0, 2, "ps") == 0)
-		{
-			uint64_t id = 0;
-
-			std::stringstream stream(command);
-			std::string element;
-			int32_t offset = (command.at(1) == 's') ? 0 : 1;
-			int32_t index = 0;
-			while(std::getline(stream, element, ' '))
-			{
-				if(index < 1 + offset)
-				{
-					index++;
-					continue;
-				}
-				else if(index == 1 + offset)
-				{
-					if(element == "help") break;
-					id = BaseLib::Math::getNumber(element, false);
-					if(id == 0) return "Invalid id.\n";
-				}
-				index++;
-			}
-			if(index == 1 + offset)
-			{
-				stringStream << "Description: This command selects a peer." << std::endl;
-				stringStream << "Usage: peers select PEERID" << std::endl << std::endl;
-				stringStream << "Parameters:" << std::endl;
-				stringStream << "  PEERID:\tThe id of the peer to select. Example: 513" << std::endl;
-				return stringStream.str();
-			}
-
-			_currentPeer = getPeer(id);
-			if(!_currentPeer) stringStream << "This peer is not paired to this central." << std::endl;
-			else
-			{
-				stringStream << "Peer with id " << std::hex << std::to_string(id) << " and device type 0x" << _bl->hf.getHexString(_currentPeer->getDeviceType()) << " selected." << std::dec << std::endl;
-				stringStream << "For information about the peer's commands type: \"help\"" << std::endl;
 			}
 			return stringStream.str();
 		}
