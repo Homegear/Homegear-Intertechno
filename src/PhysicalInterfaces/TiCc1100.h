@@ -30,8 +30,6 @@
 #ifndef TICC1100_H_
 #define TICC1100_H_
 
-#include "../../config.h"
-
 #ifdef SPISUPPORT
 
 #include <homegear-base/BaseLib.h>
