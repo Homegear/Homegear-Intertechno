@@ -32,7 +32,7 @@
 
 #include "../../config.h"
 
-#ifdef SPIINTERFACES
+#ifdef SPISUPPORT
 
 #include <homegear-base/BaseLib.h>
 #include "IIntertechnoInterface.h"

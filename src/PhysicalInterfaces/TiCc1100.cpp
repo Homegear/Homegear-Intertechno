@@ -29,7 +29,7 @@
 
 #include "TiCc1100.h"
 
-#ifdef SPIINTERFACES
+#ifdef SPISUPPORT
 #include "../GD.h"
 #include "../MyPacket.h"
 
