@@ -182,6 +182,12 @@ void Coc::lineReceived(const std::string& data)
 {
     try
     {
+		if(GD::bl->debugLevel >= 5)
+		{
+			std::string rawPacket = data;
+			_out.printDebug("Debug: Raw packet received: " + BaseLib::HelperFunctions::trim(rawPacket));
+		}
+
     	std::string packetHex;
 		if(_stackPrefix.empty())
 		{

@@ -225,6 +225,8 @@ void Cul::processPacket(std::string& data)
 {
 	try
 	{
+	    if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Raw packet received: " + BaseLib::HelperFunctions::trim(data));
+
 		if(data.size() < 6 || data.at(0) != 'i')
 		{
 		    if(data.compare(0, 4, "LOVF") == 0) _out.printWarning("Warning: CUL with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
