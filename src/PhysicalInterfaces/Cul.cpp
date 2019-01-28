@@ -234,7 +234,6 @@ void Cul::processPacket(std::string& data)
             return;
         }
 
-
 		PMyPacket packet(new MyPacket(data));
 		raisePacketReceived(packet);
 	}
