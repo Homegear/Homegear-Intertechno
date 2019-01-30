@@ -305,6 +305,8 @@ void Cunx::processData(std::vector<uint8_t>& data)
 		std::string packets;
 		packets.insert(packets.end(), data.begin(), data.end());
 
+		if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Raw packet received: " + BaseLib::HelperFunctions::trim(packets));
+
 		std::istringstream stringStream(packets);
 		std::string packetHex;
 		while(std::getline(stringStream, packetHex))

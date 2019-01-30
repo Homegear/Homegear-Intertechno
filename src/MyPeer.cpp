@@ -520,7 +520,7 @@ void MyPeer::packetReceived(PMyPacket& packet)
 		else
 		{
 			valueKey = "STATE";
-			channel = packet->getChannel();
+			channel = valuesCentral.find(2) != valuesCentral.end() ? packet->getChannel() : 1; //At least two channels in device description?
 		}
 
 		channelIterator = valuesCentral.find(channel);
