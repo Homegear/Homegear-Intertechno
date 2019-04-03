@@ -29,6 +29,7 @@
 
 #include "../GD.h"
 #include "../MyPacket.h"
+#include "../MyCULTXPacket.h"
 #include "IIntertechnoInterface.h"
 
 namespace MyFamily

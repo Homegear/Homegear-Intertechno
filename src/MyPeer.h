@@ -31,6 +31,7 @@
 #define MYPEER_H_
 
 #include "MyPacket.h"
+#include "MyCULTXPacket.h"
 #include <homegear-base/BaseLib.h>
 #include "PhysicalInterfaces/IIntertechnoInterface.h"
 
@@ -63,6 +64,7 @@ public:
 
 	virtual std::string handleCliCommand(std::string command);
 	void packetReceived(PMyPacket& packet);
+	void packetReceived(PMyCULTXPacket& packet);
 
 	virtual bool load(BaseLib::Systems::ICentral* central);
     virtual void savePeers() {}

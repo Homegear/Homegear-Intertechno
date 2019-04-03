@@ -27,47 +27,19 @@
  * files in the program, then also delete it here.
  */
 
-#ifndef MYPACKET_H_
-#define MYPACKET_H_
-
-#include <homegear-base/BaseLib.h>
-
-#include "IVisitablePacket.h"
+#ifndef IVISITABLEPACKET_H_
+#define IVISITABLEPACKET_H_
 
 namespace MyFamily
 {
+    class IPacketVisitor;
 
-class MyPacket : public BaseLib::Systems::Packet, public IVisitablePacket, public std::enable_shared_from_this<MyPacket>
-{
-    public:
-        MyPacket();
-        MyPacket(std::string& rawPacket);
-        MyPacket(int32_t senderAddress, std::string& payload);
-        virtual ~MyPacket();
+	class IVisitablePacket
+	{
+	public:
+		virtual ~IVisitablePacket() = default;
 
-        int32_t senderAddress() { return _senderAddress; }
-        int32_t getChannel() { return _channel; }
-        void setChannel(int32_t value) { _channel = value; }
-        std::string getPayload() { return _payload; }
-        void setPacket(std::string& value) { _packet = value; }
-        std::string& hexString();
-        uint8_t getRssi() { return _rssi; }
-
-        bool acceptVisitor(const std::string& senderId, const std::shared_ptr<IPacketVisitor>& visitor) override;
-    protected:
-        int32_t _senderAddress = 0;
-        std::string _packet;
-        std::string _payload;
-        int32_t _channel = -1;
-        uint8_t _rssi = 0;
-
-        uint8_t parseNibble(char nibble);
-        std::string parseNibbleString(char nibble);
-        uint8_t parseNibbleSmall(char nibble);
-        std::string parseNibbleStringSmall(char nibble);
-};
-
-typedef std::shared_ptr<MyPacket> PMyPacket;
-
+		virtual bool acceptVisitor(const std::string& senderId, const std::shared_ptr<IPacketVisitor>& visitor) = 0;
+	};
 }
 #endif

@@ -32,16 +32,21 @@
 
 #include "MyPeer.h"
 #include "MyPacket.h"
+#include "MyCULTXPacket.h"
 #include <homegear-base/BaseLib.h>
 
 #include <memory>
 #include <mutex>
 #include <string>
+#include "IPacketVisitor.h"
 
 namespace MyFamily
 {
 
-class MyCentral : public BaseLib::Systems::ICentral
+class MyCentral
+    : public BaseLib::Systems::ICentral
+    , public IPacketVisitor
+    , public std::enable_shared_from_this<MyCentral>
 {
 public:
 	MyCentral(ICentralEventSink* eventHandler);
@@ -60,6 +65,9 @@ public:
 	virtual PVariable deleteDevice(BaseLib::PRpcClientInfo clientInfo, std::string serialNumber, int32_t flags);
 	virtual PVariable deleteDevice(BaseLib::PRpcClientInfo clientInfo, uint64_t peerId, int32_t flags);
 	virtual PVariable setInterface(BaseLib::PRpcClientInfo clientInfo, uint64_t peerId, std::string interfaceId);
+
+    bool visitPacket(const std::string& senderId, std::shared_ptr<MyPacket> myPacket) override;
+    bool visitPacket(const std::string& senderId, std::shared_ptr<MyCULTXPacket> packet) override;
 protected:
 	virtual void init();
 	virtual void loadPeers();

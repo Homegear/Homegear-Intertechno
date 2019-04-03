@@ -27,8 +27,8 @@
  * files in the program, then also delete it here.
  */
 
-#ifndef MYPACKET_H_
-#define MYPACKET_H_
+#ifndef MYCULTXPACKET_H_
+#define MYCULTXPACKET_H_
 
 #include <homegear-base/BaseLib.h>
 
@@ -37,37 +37,36 @@
 namespace MyFamily
 {
 
-class MyPacket : public BaseLib::Systems::Packet, public IVisitablePacket, public std::enable_shared_from_this<MyPacket>
+class MyCULTXPacket:
+		public BaseLib::Systems::Packet,
+		public IVisitablePacket,
+		public std::enable_shared_from_this<MyCULTXPacket>
 {
     public:
-        MyPacket();
-        MyPacket(std::string& rawPacket);
-        MyPacket(int32_t senderAddress, std::string& payload);
-        virtual ~MyPacket();
+	MyCULTXPacket();
+	MyCULTXPacket(std::string& rawPacket);
+	MyCULTXPacket(int32_t senderAddress, std::string& payload);
+        virtual ~MyCULTXPacket();
 
-        int32_t senderAddress() { return _senderAddress; }
         int32_t getChannel() { return _channel; }
         void setChannel(int32_t value) { _channel = value; }
         std::string getPayload() { return _payload; }
         void setPacket(std::string& value) { _packet = value; }
-        std::string& hexString();
+        std::string hexString();
         uint8_t getRssi() { return _rssi; }
+        uint8_t getType() { return _type; }
 
         bool acceptVisitor(const std::string& senderId, const std::shared_ptr<IPacketVisitor>& visitor) override;
     protected:
-        int32_t _senderAddress = 0;
         std::string _packet;
         std::string _payload;
         int32_t _channel = -1;
         uint8_t _rssi = 0;
+        int32_t _type = -1;
 
-        uint8_t parseNibble(char nibble);
-        std::string parseNibbleString(char nibble);
-        uint8_t parseNibbleSmall(char nibble);
-        std::string parseNibbleStringSmall(char nibble);
 };
 
-typedef std::shared_ptr<MyPacket> PMyPacket;
+typedef std::shared_ptr<MyCULTXPacket> PMyCULTXPacket;
 
 }
 #endif

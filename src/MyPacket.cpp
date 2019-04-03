@@ -31,6 +31,8 @@
 
 #include "GD.h"
 
+#include "IPacketVisitor.h"
+
 namespace MyFamily
 {
 MyPacket::MyPacket()
@@ -92,6 +94,11 @@ MyPacket::MyPacket(std::string& rawPacket)
 
 		_payload = parseNibbleString(_packet.at(_packet.size() - 5));
 	}
+}
+
+bool MyPacket::acceptVisitor(const std::string& senderId, const std::shared_ptr<IPacketVisitor>& visitor)
+{
+    return visitor->visitPacket(senderId, shared_from_this());
 }
 
 MyPacket::MyPacket(int32_t senderAddress, std::string& payload) : _payload(payload)

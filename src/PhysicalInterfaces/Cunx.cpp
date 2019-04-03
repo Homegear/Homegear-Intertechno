@@ -31,6 +31,7 @@
 #include <homegear-base/BaseLib.h>
 #include "../GD.h"
 #include "../MyPacket.h"
+#include "../MyCULTXPacket.h"
 
 namespace MyFamily
 {

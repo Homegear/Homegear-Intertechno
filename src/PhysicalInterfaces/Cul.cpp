@@ -149,10 +149,12 @@ void Cul::listen()
 				}
 				else if(result == 1)
 				{
-					/*std::vector<std::string> data{ "i1045510D\r\n", "i1045540D\r\n", "i10515114\r\n", "i1051540D\r\n", "i1054510D\r\n", "i1054540D\r\n", "i1055110D\r\n", "i1055140D\r\n" };
+					//std::vector<std::string> data{ "i1045510D\r\n", "i1045540D\r\n", "i10515114\r\n", "i1051540D\r\n", "i1054510D\r\n", "i1054540D\r\n", "i1055110D\r\n", "i1055140D\r\n" };
+					std::vector<std::string> data{ "tA01078378C16\r\n", "i1045540D\r\n", "i10515114\r\n", "i1051540D\r\n", "tAED349049202\r\n", "tAE1132032412\r\n", "tA0D3709700FF\r\n", "tA0FC7377304C\r\n" };
 					int32_t index = BaseLib::HelperFunctions::getRandomNumber(0, 7);
 					processPacket(data.at(index));
-					_lastPacketReceived = BaseLib::HelperFunctions::getTime();*/
+					_lastPacketReceived = BaseLib::HelperFunctions::getTime();
+					std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 					/*if(BaseLib::HelperFunctions::getTimeSeconds() % 10 == 0)
 					{
 						std::vector<std::string> data{ "i4500140D\r\n", "i4500150D\r\n", "i4540140D\r\n", "i4540150D\r\n", "i4510140D\r\n", "i4510150D\r\n", "i4550140D\r\n", "i4550150D\r\n", "i4504140D\r\n", "i4504150D\r\n", "i4544140D\r\n", "i4544150D\r\n", "i4514140D\r\n", "i4514150D\r\n", "i4554140D\r\n", "i4554150D\r\n", "i4501140D\r\n", "i4501150D\r\n", "i4541140D\r\n", "i4541150D\r\n", "i4511140D\r\n", "i4511150D\r\n", "i4551140D\r\n", "i4551150D\r\n", "i4505140D\r\n", "i4505150D\r\n", "i4545140D\r\n", "i4545150D\r\n", "i4515140D\r\n", "i4515150D\r\n", "i4555140D\r\n", "i4555150D\r\n"  };
@@ -161,7 +163,7 @@ void Cul::listen()
 							processPacket(data.at(i));
 							_lastPacketReceived = BaseLib::HelperFunctions::getTime();
 						}
-						std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+						std::this_thread::sleep_for(std::chrono::milliseconds(3000));
 					}*/
 					continue;
 				}
@@ -185,17 +187,28 @@ void Cul::processPacket(std::string& data)
 {
 	try
 	{
+		std::shared_ptr<BaseLib::Systems::Packet> packet = nullptr;
+
 	    if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Raw packet received: " + BaseLib::HelperFunctions::trim(data));
 
-		if(data.size() < 6 || data.at(0) != 'i')
+	    if(data.at(0) == 't' && (data.at(5) == data.at(8) || data.at(6) == data.at(9)))
 		{
-		    if(data.compare(0, 4, "LOVF") == 0) _out.printWarning("Warning: CUL with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
-		    else _out.printInfo("Info: Unknown IT packet received: " + data);
-            return;
-        }
+			_out.printInfo("Info: Recognized TFA packet");
+			 packet = std::make_shared<MyCULTXPacket>(data);
+			//PMyCULTXPacket packet(new MyCULTXPacket(data));
+			//raisePacketReceived(packet);
+		} else {
 
-		PMyPacket packet(new MyPacket(data));
-		raisePacketReceived(packet);
+			if(data.size() < 6 || data.at(0) != 'i')
+			{
+				if(data.compare(0, 4, "LOVF") == 0) _out.printWarning("Warning: CUL with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
+				else _out.printInfo("Info: Unknown IT packet received: " + data);
+				return;
+			}
+			packet = std::make_shared<MyPacket>(data);
+			//PMyPacket packet(new MyPacket(data));
+		}
+	    raisePacketReceived(packet);
 	}
 	catch(const std::exception& ex)
     {

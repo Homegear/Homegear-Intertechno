@@ -251,13 +251,56 @@ std::pair<int32_t, int32_t> MyCentral::getOldItGroupStartCodeAndChannel(int32_t 
     return returnValue;
 }
 
+
 bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib::Systems::Packet> packet)
+{
+		if(_disposing) return false;
+		auto visitablePacket = std::dynamic_pointer_cast<IVisitablePacket>(packet);
+        if (!visitablePacket) return false;
+
+        return visitablePacket->acceptVisitor(senderId, shared_from_this());
+}
+
+
+bool MyCentral::visitPacket(const std::string& senderId, std::shared_ptr<MyCULTXPacket> myPacket)
 {
 	try
 	{
-		if(_disposing) return false;
-		PMyPacket myPacket(std::dynamic_pointer_cast<MyPacket>(packet));
-		if(!myPacket) return false;
+		if(GD::bl->debugLevel >= 4) std::cout << BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) << " CULTX packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) << " :" << myPacket->getPayload() << std::endl;
+		std::vector<std::shared_ptr<BaseLib::Systems::Peer>> peers = getPeers();
+		uint8_t processed = 0;
+		for(auto peer : peers)
+		{
+			PMyPeer myPeer = std::dynamic_pointer_cast<MyPeer>(peer);
+			if(senderId != myPeer->getPhysicalInterfaceId()) return false;
+			if(myPeer->getAddress() == myPacket->senderAddress()) {
+				myPeer->packetReceived(myPacket);
+				processed = 1;
+				break;
+			}
+		}
+		if(processed == 0 && GD::bl->debugLevel >= 4) std::cout << BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) << " CULTX packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) << " - Device not yet added to database." << std::endl;
+
+	}
+	catch(const std::exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+    return false;
+}
+
+bool MyCentral::visitPacket(const std::string& senderId, std::shared_ptr<MyPacket> myPacket)
+{
+	try
+	{
 
 		if(GD::bl->debugLevel >= 4) _bl->out.printInfo(BaseLib::HelperFunctions::getTimeString(myPacket->getTimeReceived()) + " Intertechno packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) + " (RSSI: " + std::to_string(((int32_t)myPacket->getRssi()) * -1) + " dBm): " + myPacket->getPayload());
 

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
+	<supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+		<device id="CULTX-SENSOR-TEMP-HUM">
+			<description>Temperature & Humidity Sensor</description>
+			<typeNumber>0x01</typeNumber>
+		</device>
+	</supportedDevices>
+	<functions xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+		<function channel="0" type="WEATHER">
+			<properties>
+				<linkSenderFunctionTypes>
+					<type>WEATHER_TH</type>
+				</linkSenderFunctionTypes>
+			</properties>
+			<configParameters>CULTXConfig</configParameters>
+			<variables>WeatherVariables</variables>
+			<linkParameters>WeatherLinkParameters</linkParameters>
+		</function>
+	</functions>
+	<parameterGroups xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
+		<configParameters id="CULTXConfig"/>
+		<variables id="WeatherVariables">
+			<parameter id="TEMPERATURE">
+				<properties>
+					<writeable>false</writeable>
+					<unit>°C</unit>
+					<casts>
+						<decimalIntegerScale>
+							<factor>10.000000</factor>
+						</decimalIntegerScale>
+					</casts>
+				</properties>
+				<logicalDecimal>
+					<minimumValue>-40.000000</minimumValue>
+					<maximumValue>80.000000</maximumValue>
+				</logicalDecimal>
+				<physicalInteger groupId="TEMPERATURE">
+					<size>1.7</size>
+					<operationType>command</operationType>
+				</physicalInteger>
+				<packets>
+					<packet id="WEATHER_EVENT">
+						<type>event</type>
+					</packet>
+				</packets>
+			</parameter>
+			<parameter id="HUMIDITY">
+				<properties>
+					<writeable>false</writeable>
+					<unit>%</unit>
+				</properties>
+				<logicalInteger>
+					<minimumValue>0</minimumValue>
+					<maximumValue>99</maximumValue>
+				</logicalInteger>
+				<physicalInteger groupId="HUMIDITY">
+					<size>1.0</size>
+					<operationType>command</operationType>
+				</physicalInteger>
+				<packets>
+					<packet id="WEATHER_EVENT">
+						<type>event</type>
+					</packet>
+				</packets>
+			</parameter>
+		</variables>
+		<linkParameters id="WeatherLinkParameters"/>
+	</parameterGroups>
+</homegearDevice>
