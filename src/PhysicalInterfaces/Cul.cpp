@@ -150,8 +150,36 @@ void Cul::listen()
 				else if(result == 1)
 				{
 					//std::vector<std::string> data{ "i1045510D\r\n", "i1045540D\r\n", "i10515114\r\n", "i1051540D\r\n", "i1054510D\r\n", "i1054540D\r\n", "i1055110D\r\n", "i1055140D\r\n" };
-					std::vector<std::string> data{ "tA01078378C16\r\n", "i1045540D\r\n", "i10515114\r\n", "i1051540D\r\n", "tAED349049202\r\n", "tAE1132032412\r\n", "tA0D3709700FF\r\n", "tA0FC7377304C\r\n" };
-					int32_t index = BaseLib::HelperFunctions::getRandomNumber(0, 7);
+					// Debug CULTX
+					std::vector<std::string> data
+					{
+					"tAEFD49049E0F\r\n",
+					"tAE1134034807\r\n",
+					"tA0FD7287202C\r\n",
+					"tA01077577C11\r\n",
+					"tAE1134034809\r\n",
+					"tA01077577C0A\r\n",
+					"tAEFD49049E37\r\n",
+					"tA01077577CFC\r\n",
+					"tAE11340348FD\r\n",
+					"tAED357057011\r\n",
+					"tA0FC72972038\r\n",
+					"tAEFD49049E38\r\n",
+					"tAED35705700A\r\n",
+					"tA01077577C07\r\n",
+					"tAE1134034804\r\n",
+					"tA0FC7297203A\r\n",
+					"tA01077577C09\r\n",
+					"tA01077577C09\r\n",
+					"tAE1134034807\r\n",
+					"tAED35705700A\r\n",
+					"tA01077577C08\r\n",
+					"tAE1134034809\r\n",
+					"tAED35705700B\r\n",
+					"tA0FC73173A3A\r\n"
+					};
+
+					int32_t index = BaseLib::HelperFunctions::getRandomNumber(0, data.size()-1);
 					processPacket(data.at(index));
 					_lastPacketReceived = BaseLib::HelperFunctions::getTime();
 					std::this_thread::sleep_for(std::chrono::milliseconds(3000));
@@ -195,7 +223,7 @@ void Cul::processPacket(std::string& data)
 	    if(data.size() > 9 && data.at(0) == 't' && (data.at(5) == data.at(8) || data.at(6) == data.at(9)))
 		{
 	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized CULTX packet");
-			 packet = std::make_shared<MyCULTXPacket>(data);
+			packet = std::make_shared<MyCULTXPacket>(data);
 			raisePacketReceived(packet);
 			return;
 		}

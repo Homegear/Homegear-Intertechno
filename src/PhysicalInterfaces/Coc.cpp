@@ -176,7 +176,7 @@ void Coc::lineReceived(const std::string& data)
 	    if(packetHex.size() > 9 && packetHex.at(0) == 't' && (packetHex.at(5) == packetHex.at(8) || packetHex.at(6) == packetHex.at(9)))
 		{
 	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized CULTX packet");
-			 packet = std::make_shared<MyCULTXPacket>(data);
+			 packet = std::make_shared<MyCULTXPacket>(packetHex);
 			raisePacketReceived(packet);
 			return;
 		}

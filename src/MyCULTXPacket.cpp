@@ -43,13 +43,16 @@ MyCULTXPacket::MyCULTXPacket(std::string& rawPacket)
 	_timeReceived = BaseLib::HelperFunctions::getTime();
 	_packet = rawPacket;
 
-	//A01078378C16
 	std::string rawString = _packet.substr(1);
 	auto packetVector = GD::bl->hf.getUBinary(rawString);
-	_senderAddress = BaseLib::BitReaderWriter::getPosition8(packetVector, 11, 4);
+	//_senderAddress = BaseLib::BitReaderWriter::getPosition8(packetVector, 11, 4);
+	_senderAddress = (  ((BaseLib::BitReaderWriter::getPosition8(packetVector, 8, 4))<<3) + ((BaseLib::BitReaderWriter::getPosition8(packetVector, 12, 4))>>1));
 	_type = BaseLib::BitReaderWriter::getPosition8(packetVector, 4, 4);
 	_rssi = 0;
 
+
+
+	// 1010 0000 1111 1101 0111 0010
 	// A		0	1	 0	  7	   8		378C16
 	// 1010 0000 0001 0000 0111 1000
 	// 0	4	 8	  12   16	20
