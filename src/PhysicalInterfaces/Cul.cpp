@@ -191,24 +191,28 @@ void Cul::processPacket(std::string& data)
 
 	    if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Raw packet received: " + BaseLib::HelperFunctions::trim(data));
 
-	    if(data.at(0) == 't' && (data.at(5) == data.at(8) || data.at(6) == data.at(9)))
+	    // CULTX
+	    if(data.size() > 9 && data.at(0) == 't' && (data.at(5) == data.at(8) || data.at(6) == data.at(9)))
 		{
-			_out.printInfo("Info: Recognized TFA packet");
+	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized CULTX packet");
 			 packet = std::make_shared<MyCULTXPacket>(data);
-			//PMyCULTXPacket packet(new MyCULTXPacket(data));
-			//raisePacketReceived(packet);
-		} else {
-
-			if(data.size() < 6 || data.at(0) != 'i')
-			{
-				if(data.compare(0, 4, "LOVF") == 0) _out.printWarning("Warning: CUL with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
-				else _out.printInfo("Info: Unknown IT packet received: " + data);
-				return;
-			}
-			packet = std::make_shared<MyPacket>(data);
-			//PMyPacket packet(new MyPacket(data));
+			raisePacketReceived(packet);
+			return;
 		}
-	    raisePacketReceived(packet);
+
+	    // Intertechno
+	    if(data.size() > 6 && data.at(0) == 'i') {
+	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized Intertechno packet");
+	    	packet = std::make_shared<MyPacket>(data);
+	    	raisePacketReceived(packet);
+	    	return;
+	    }
+
+	    // Not recognized
+		if(data.compare(0, 4, "LOVF") == 0) _out.printWarning("Warning: CUL with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
+		else _out.printInfo("Info: Unknown IT packet received: " + data);
+		return;
+
 	}
 	catch(const std::exception& ex)
     {
