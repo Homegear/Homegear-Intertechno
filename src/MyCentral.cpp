@@ -30,6 +30,8 @@
 #include "MyCentral.h"
 #include "GD.h"
 
+#include <iomanip>
+
 namespace MyFamily {
 
 MyCentral::MyCentral(ICentralEventSink* eventHandler) : BaseLib::Systems::ICentral(MY_FAMILY_ID, GD::bl, eventHandler)
@@ -313,7 +315,7 @@ bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib:
 		PMyPacket myPacket(std::dynamic_pointer_cast<MyPacket>(packet));
 		if(!myPacket) return false;
 
-		if(GD::bl->debugLevel >= 4) std::cout << BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) << " Intertechno packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) << " (RSSI: " << (((int32_t)myPacket->getRssi()) * -1) << " dBm): " << myPacket->getPayload() << std::endl;
+		if(GD::bl->debugLevel >= 4) _bl->out.printInfo(BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) + " Intertechno packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) + " (RSSI: " + std::to_string(((int32_t)myPacket->getRssi()) * -1) + " dBm): " + myPacket->getPayload());
 
 		if(myPacket->getPayload().find('F') != std::string::npos)
 		{
@@ -374,11 +376,11 @@ bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib:
 				}
 				else
                 {
-				    if(GD::bl->debugLevel >= 4) std::cout << BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) << " Please use one of the following addresses for device creation: Intertechno multi-channel remote or sensor (use device type 0x33): 0x" << BaseLib::HelperFunctions::getHexString(((myPacket->senderAddress() & 0x3C0) >> 2) | getOldItGroupStartCodeAndChannel(myPacket->senderAddress()).first, 4) << "; Intertechno one channel remote or sensor (use device type 0x30): 0x" << BaseLib::HelperFunctions::getHexString(myPacket->senderAddress() >> 2, 4) << "; Elro (use device type 0x24): 0x" << BaseLib::HelperFunctions::getHexString(myPacket->senderAddress() >> 5, 4) << std::endl;
+				    if(GD::bl->debugLevel >= 4) _bl->out.printInfo(BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) + " Please use one of the following addresses for device creation: Intertechno multi-channel remote or sensor (use device type 0x33): 0x" + BaseLib::HelperFunctions::getHexString(((myPacket->senderAddress() & 0x3C0) >> 2) | getOldItGroupStartCodeAndChannel(myPacket->senderAddress()).first, 4) + "; Intertechno one channel remote or sensor (use device type 0x30): 0x" + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress() >> 2, 4) + "; Elro (use device type 0x24): 0x" + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress() >> 5, 4));
                 }
 			}
 
-			if(peers.empty() && GD::bl->debugLevel >= 4) std::cout << BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) << " Please use one of the following addresses for device creation: Intertechno multi-channel remote or sensor (use device type 0x33): 0x" << BaseLib::HelperFunctions::getHexString(((myPacket->senderAddress() & 0x3C0) >> 2) | getOldItGroupStartCodeAndChannel(myPacket->senderAddress()).first, 4) << "; Intertechno one channel remote or sensor (use device type 0x30): 0x" << BaseLib::HelperFunctions::getHexString(myPacket->senderAddress() >> 2, 4) << "; Elro (use device type 0x24): 0x" << BaseLib::HelperFunctions::getHexString(myPacket->senderAddress() >> 5, 4) << std::endl;
+			if(peers.empty() && GD::bl->debugLevel >= 4) _bl->out.printInfo(BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) + " Please use one of the following addresses for device creation: Intertechno multi-channel remote or sensor (use device type 0x33): 0x" + BaseLib::HelperFunctions::getHexString(((myPacket->senderAddress() & 0x3C0) >> 2) | getOldItGroupStartCodeAndChannel(myPacket->senderAddress()).first, 4) + "; Intertechno one channel remote or sensor (use device type 0x30): 0x" + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress() >> 2, 4) + "; Elro (use device type 0x24): 0x" + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress() >> 5, 4));
 		}
 		else
 		{
@@ -388,7 +390,7 @@ bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib:
 				peer = getPeer((int32_t)(0x80000000 | myPacket->senderAddress()));
 				if(!peer)
                 {
-                    if(GD::bl->debugLevel >= 4) std::cout << BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) << " Please use one of the following addresses for device creation (possible device types: 0x10 to 0x1F): 0x" << BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) << " or 0x" << BaseLib::HelperFunctions::getHexString((int32_t)(0x80000000 | myPacket->senderAddress()), 8) << std::endl;
+                    if(GD::bl->debugLevel >= 4) _bl->out.printInfo(BaseLib::HelperFunctions::getTimeString(myPacket->timeReceived()) + " Please use one of the following addresses for device creation (possible device types: 0x10 to 0x1F): 0x" + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) + " or 0x" + BaseLib::HelperFunctions::getHexString((int32_t)(0x80000000 | myPacket->senderAddress()), 8));
                     return false;
                 }
 			}
