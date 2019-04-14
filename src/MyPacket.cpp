@@ -166,7 +166,7 @@ std::string MyPacket::parseNibbleStringSmall(char nibble)
 	return "00";
 }
 
-std::string MyPacket::hexString()
+std::string& MyPacket::hexString()
 {
 	try
 	{
@@ -199,14 +199,7 @@ std::string MyPacket::hexString()
     {
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
-    catch(BaseLib::Exception& ex)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-    catch(...)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
-    }
-    return "";
+    _packet.clear();
+    return _packet;
 }
 }
