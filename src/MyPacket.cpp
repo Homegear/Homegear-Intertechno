@@ -43,6 +43,8 @@ MyPacket::MyPacket(std::string& rawPacket)
 	_packet = rawPacket.at(0) == 'i' && rawPacket.size() > 3 ? rawPacket.substr(1, rawPacket.size() - 3) : rawPacket;
 	_senderAddress = 0;
 
+    if(GD::bl->debugLevel >= 5) GD::out.printDebug("Debug: Packet size is " + std::to_string(_packet.size()));
+
 	std::string rssiString = _packet.substr(_packet.size() - 2, 2);
 	int32_t rssiDevice = BaseLib::Math::getNumber(rssiString);
 	//1) Read the RSSI status register
