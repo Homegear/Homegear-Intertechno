@@ -43,13 +43,15 @@ class MyPacket : public BaseLib::Systems::Packet
         MyPacket(int32_t senderAddress, std::string& payload);
         virtual ~MyPacket();
 
+        int32_t senderAddress() { return _senderAddress; }
         int32_t getChannel() { return _channel; }
         void setChannel(int32_t value) { _channel = value; }
         std::string getPayload() { return _payload; }
         void setPacket(std::string& value) { _packet = value; }
-        std::string hexString();
+        std::string& hexString();
         uint8_t getRssi() { return _rssi; }
     protected:
+        int32_t _senderAddress = 0;
         std::string _packet;
         std::string _payload;
         int32_t _channel = -1;
