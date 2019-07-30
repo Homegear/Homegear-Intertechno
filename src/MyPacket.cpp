@@ -43,6 +43,8 @@ MyPacket::MyPacket(std::string& rawPacket)
 	_packet = rawPacket.at(0) == 'i' && rawPacket.size() > 3 ? rawPacket.substr(1, rawPacket.size() - 3) : rawPacket;
 	_senderAddress = 0;
 
+    if(GD::bl->debugLevel >= 5) GD::out.printDebug("Debug: Packet size is " + std::to_string(_packet.size()));
+
 	std::string rssiString = _packet.substr(_packet.size() - 2, 2);
 	int32_t rssiDevice = BaseLib::Math::getNumber(rssiString);
 	//1) Read the RSSI status register
@@ -166,7 +168,7 @@ std::string MyPacket::parseNibbleStringSmall(char nibble)
 	return "00";
 }
 
-std::string MyPacket::hexString()
+std::string& MyPacket::hexString()
 {
 	try
 	{
@@ -199,14 +201,7 @@ std::string MyPacket::hexString()
     {
         GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
-    catch(BaseLib::Exception& ex)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
-    }
-    catch(...)
-    {
-        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
-    }
-    return "";
+    _packet.clear();
+    return _packet;
 }
 }
