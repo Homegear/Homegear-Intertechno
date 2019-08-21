@@ -149,6 +149,7 @@ void Cul::listen()
 				}
 				else if(result == 1)
 				{
+#ifdef DEBUG
 					//std::vector<std::string> data{ "i1045510D\r\n", "i1045540D\r\n", "i10515114\r\n", "i1051540D\r\n", "i1054510D\r\n", "i1054540D\r\n", "i1055110D\r\n", "i1055140D\r\n" };
 					// Debug CULTX
 					std::vector<std::string> data
@@ -183,16 +184,7 @@ void Cul::listen()
 					processPacket(data.at(index));
 					_lastPacketReceived = BaseLib::HelperFunctions::getTime();
 					std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-					/*if(BaseLib::HelperFunctions::getTimeSeconds() % 10 == 0)
-					{
-						std::vector<std::string> data{ "i4500140D\r\n", "i4500150D\r\n", "i4540140D\r\n", "i4540150D\r\n", "i4510140D\r\n", "i4510150D\r\n", "i4550140D\r\n", "i4550150D\r\n", "i4504140D\r\n", "i4504150D\r\n", "i4544140D\r\n", "i4544150D\r\n", "i4514140D\r\n", "i4514150D\r\n", "i4554140D\r\n", "i4554150D\r\n", "i4501140D\r\n", "i4501150D\r\n", "i4541140D\r\n", "i4541150D\r\n", "i4511140D\r\n", "i4511150D\r\n", "i4551140D\r\n", "i4551150D\r\n", "i4505140D\r\n", "i4505150D\r\n", "i4545140D\r\n", "i4545150D\r\n", "i4515140D\r\n", "i4515150D\r\n", "i4555140D\r\n", "i4555150D\r\n"  };
-						for(uint32_t i = 0; i < data.size(); i++)
-						{
-							processPacket(data.at(i));
-							_lastPacketReceived = BaseLib::HelperFunctions::getTime();
-						}
-						std::this_thread::sleep_for(std::chrono::milliseconds(3000));
-					}*/
+#endif
 					continue;
 				}
 
@@ -286,7 +278,7 @@ void Cul::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 		_serial->writeData(data);
 		_lastPacketSent = BaseLib::HelperFunctions::getTime();
 		// Sleep as CUL cannot handle too much commands in short time
-		std::this_thread::sleep_for(std::chrono::milliseconds(400));
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
 	catch(const std::exception& ex)
     {

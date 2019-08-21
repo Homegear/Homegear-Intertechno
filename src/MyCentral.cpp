@@ -289,7 +289,7 @@ bool MyCentral::processPacket(const std::string& senderId, std::shared_ptr<MyCul
 				break;
 			}
 		}
-		if(processed == 0 && GD::bl->debugLevel >= 4) _bl->out.printDebug(BaseLib::HelperFunctions::getTimeString(myPacket->getTimeReceived()) + " CULTX packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) + " - Device not yet added to database.");
+		if(processed == 0 && GD::bl->debugLevel >= 4) _bl->out.printInfo(BaseLib::HelperFunctions::getTimeString(myPacket->getTimeReceived()) + " CULTX packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) + "; Device not yet added to database.");
 
 	}
 	catch(const std::exception& ex)
