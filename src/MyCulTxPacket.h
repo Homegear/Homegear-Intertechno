@@ -27,19 +27,43 @@
  * files in the program, then also delete it here.
  */
 
-#ifndef IVISITABLEPACKET_H_
-#define IVISITABLEPACKET_H_
+#ifndef MYCULTXPACKET_H_
+#define MYCULTXPACKET_H_
+
+#include <homegear-base/BaseLib.h>
+
 
 namespace MyFamily
 {
-    class IPacketVisitor;
 
-	class IVisitablePacket
-	{
-	public:
-		virtual ~IVisitablePacket() = default;
+class MyCulTxPacket : public BaseLib::Systems::Packet
+{
+    public:
+	MyCulTxPacket();
+	MyCulTxPacket(std::string& rawPacket);
+	MyCulTxPacket(int32_t senderAddress, std::string& payload);
+        virtual ~MyCulTxPacket();
 
-		virtual bool acceptVisitor(const std::string& senderId, const std::shared_ptr<IPacketVisitor>& visitor) = 0;
-	};
+        int32_t senderAddress() { return _senderAddress; }
+        int32_t getChannel() { return _channel; }
+        void setChannel(int32_t value) { _channel = value; }
+        std::string getPayload() { return _payload; }
+        void setPacket(std::string& value) { _packet = value; }
+        std::string hexString();
+        uint8_t getRssi() { return _rssi; }
+        uint8_t getType() { return _type; }
+
+    protected:
+        int32_t _senderAddress = 0;
+        std::string _packet;
+        std::string _payload;
+        int32_t _channel = -1;
+        uint8_t _rssi = 0;
+        int32_t _type = -1;
+
+};
+
+typedef std::shared_ptr<MyCulTxPacket> PMyCulTxPacket;
+
 }
 #endif

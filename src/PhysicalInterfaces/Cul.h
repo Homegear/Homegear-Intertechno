@@ -31,8 +31,9 @@
 #define CUL_H_
 
 #include "../MyPacket.h"
-#include "../MyCULTXPacket.h"
 #include <homegear-base/BaseLib.h>
+
+#include "../MyCulTxPacket.h"
 #include "IIntertechnoInterface.h"
 
 namespace MyFamily

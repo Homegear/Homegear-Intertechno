@@ -2,7 +2,7 @@
 <homegearDevice xmlns="https://homegear.eu/xmlNamespaces/HomegearDevice" version="1">
 	<supportedDevices xmlns="https://homegear.eu/xmlNamespaces/DeviceType">
 		<device id="CULTX-SENSOR-TEMP-HUM">
-			<description>Temperature & Humidity Sensor</description>
+			<description>Temperature and Humidity Sensor</description>
 			<typeNumber>0x01</typeNumber>
 		</device>
 	</supportedDevices>

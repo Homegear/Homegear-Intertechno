@@ -31,10 +31,10 @@
 
 #include "GD.h"
 #include "MyPacket.h"
-#include "MyCULTXPacket.h"
 #include "MyCentral.h"
 
 #include <iomanip>
+#include "MyCulTxPacket.h"
 
 namespace MyFamily
 {
@@ -400,7 +400,7 @@ void MyPeer::setRssiDevice(uint8_t rssi)
 }
 
 
-void MyPeer::packetReceived(PMyCULTXPacket& packet)
+void MyPeer::packetReceived(PMyCulTxPacket& packet)
 {
 	try
 		{

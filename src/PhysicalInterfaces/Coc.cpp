@@ -29,8 +29,8 @@
 
 #include "Coc.h"
 #include "../GD.h"
+#include "../MyCulTxPacket.h"
 #include "../MyPacket.h"
-#include "../MyCULTXPacket.h"
 
 namespace MyFamily
 {
@@ -176,7 +176,8 @@ void Coc::lineReceived(const std::string& data)
 	    if(packetHex.size() > 9 && packetHex.at(0) == 't' && (packetHex.at(5) == packetHex.at(8) || packetHex.at(6) == packetHex.at(9)))
 		{
 	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized CULTX packet");
-			 packet = std::make_shared<MyCULTXPacket>(packetHex);
+			 packet = std::make_shared<MyCulTxPacket>(packetHex);
+			 packet->setTag(GD::CULTX);
 			raisePacketReceived(packet);
 			return;
 		}
@@ -185,6 +186,7 @@ void Coc::lineReceived(const std::string& data)
 	    if(packetHex.size() > 6 && packetHex.at(0) == 'i') {
 	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized Intertechno packet");
 	    	packet = std::make_shared<MyPacket>(packetHex);
+	    	packet->setTag(GD::INTERTECHNO);
 	    	raisePacketReceived(packet);
 	    	return;
 	    }

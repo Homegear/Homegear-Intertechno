@@ -30,8 +30,8 @@
 #include "Cunx.h"
 #include <homegear-base/BaseLib.h>
 #include "../GD.h"
+#include "../MyCulTxPacket.h"
 #include "../MyPacket.h"
-#include "../MyCULTXPacket.h"
 
 namespace MyFamily
 {
@@ -261,7 +261,8 @@ void Cunx::processData(std::vector<uint8_t>& data)
 		    if(packetHex.size() > 9 && packetHex.at(0) == 't' && (packetHex.at(5) == packetHex.at(8) || packetHex.at(6) == packetHex.at(9)))
 			{
 		    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized CULTX packet");
-		    	PMyCULTXPacket packet(new MyCULTXPacket(packetHex));
+		    	PMyCulTxPacket packet = std::make_shared<MyCulTxPacket>(packetHex);
+		    	packet->setTag(GD::CULTX);
 				raisePacketReceived(packet);
 				continue;
 			}
@@ -269,7 +270,8 @@ void Cunx::processData(std::vector<uint8_t>& data)
 		    // Intertechno
 		    if(packetHex.size() > 6 && packetHex.at(0) == 'i') {
 		    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized Intertechno packet");
-		    	PMyPacket packet(new MyPacket(packetHex));
+		    	PMyPacket packet = std::make_shared<MyPacket>(packetHex);
+		    	packet->setTag(GD::INTERTECHNO);
 		    	raisePacketReceived(packet);
 		    	continue;
 		    }

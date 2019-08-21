@@ -223,7 +223,8 @@ void Cul::processPacket(std::string& data)
 	    if(data.size() > 9 && data.at(0) == 't' && (data.at(5) == data.at(8) || data.at(6) == data.at(9)))
 		{
 	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized CULTX packet");
-			packet = std::make_shared<MyCULTXPacket>(data);
+			packet = std::make_shared<MyCulTxPacket>(data);
+			packet->setTag(GD::CULTX);
 			raisePacketReceived(packet);
 			return;
 		}
@@ -232,6 +233,7 @@ void Cul::processPacket(std::string& data)
 	    if(data.size() > 6 && data.at(0) == 'i') {
 	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized Intertechno packet");
 	    	packet = std::make_shared<MyPacket>(data);
+	    	packet->setTag(GD::INTERTECHNO);
 	    	raisePacketReceived(packet);
 	    	return;
 	    }
@@ -283,6 +285,8 @@ void Cul::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 
 		_serial->writeData(data);
 		_lastPacketSent = BaseLib::HelperFunctions::getTime();
+		// Sleep as CUL cannot handle too much commands in short time
+		std::this_thread::sleep_for(std::chrono::milliseconds(400));
 	}
 	catch(const std::exception& ex)
     {

@@ -27,18 +27,17 @@
  * files in the program, then also delete it here.
  */
 
-#include "MyCULTXPacket.h"
+#include "MyCulTxPacket.h"
 
 #include "GD.h"
-#include "IPacketVisitor.h"
 
 namespace MyFamily
 {
-MyCULTXPacket::MyCULTXPacket()
+MyCulTxPacket::MyCulTxPacket()
 {
 }
 
-MyCULTXPacket::MyCULTXPacket(std::string& rawPacket)
+MyCulTxPacket::MyCulTxPacket(std::string& rawPacket)
 {
 	_timeReceived = BaseLib::HelperFunctions::getTime();
 	_packet = rawPacket;
@@ -46,16 +45,14 @@ MyCULTXPacket::MyCULTXPacket(std::string& rawPacket)
 	std::string rawString = _packet.substr(1);
 	auto packetVector = GD::bl->hf.getUBinary(rawString);
 	//_senderAddress = BaseLib::BitReaderWriter::getPosition8(packetVector, 11, 4);
-	_senderAddress = (  ((BaseLib::BitReaderWriter::getPosition8(packetVector, 8, 4))<<3) + ((BaseLib::BitReaderWriter::getPosition8(packetVector, 12, 4))>>1));
+	_senderAddress = (  ((BaseLib::BitReaderWriter::getPosition8(packetVector, 8, 4)) << 3) + ((BaseLib::BitReaderWriter::getPosition8(packetVector, 12, 4)) >> 1));
 	_type = BaseLib::BitReaderWriter::getPosition8(packetVector, 4, 4);
 	_rssi = 0;
 
-
-
 	// 1010 0000 1111 1101 0111 0010
-	// A		0	1	 0	  7	   8		378C16
+	// A		0	1	 0	  7	   8		378C16  <-- example packet
 	// 1010 0000 0001 0000 0111 1000
-	// 0	4	 8	  12   16	20
+	// 0	4	 8	  12   16	20   Position of bits
 	auto value_ten = BaseLib::BitReaderWriter::getPosition8(packetVector, 16, 4);
 	auto value_one = BaseLib::BitReaderWriter::getPosition8(packetVector, 20, 4);
 	auto value_dotone = BaseLib::BitReaderWriter::getPosition8(packetVector, 24, 4);
@@ -64,29 +61,25 @@ MyCULTXPacket::MyCULTXPacket(std::string& rawPacket)
 	rawvalue += value_one;
 	rawvalue += value_dotone*0.1;
 
-	// Temp adjusted by -50
+	// Value of temp adjusted by -50
 	if(_type==0) rawvalue -= 50;
 
 	_payload = std::to_string(rawvalue);
 
 }
 
-bool MyCULTXPacket::acceptVisitor(const std::string& senderId, const std::shared_ptr<IPacketVisitor>& visitor)
-{
-    return visitor->visitPacket(senderId, shared_from_this());
-}
 
-MyCULTXPacket::MyCULTXPacket(int32_t senderAddress, std::string& payload) : _payload(payload)
+MyCulTxPacket::MyCulTxPacket(int32_t senderAddress, std::string& payload) : _payload(payload)
 {
 	_senderAddress = senderAddress;
 }
 
-MyCULTXPacket::~MyCULTXPacket()
+MyCulTxPacket::~MyCulTxPacket()
 {
 	_payload.clear();
 }
 
-std::string MyCULTXPacket::hexString()
+std::string MyCulTxPacket::hexString()
 {
 	try
 	{
