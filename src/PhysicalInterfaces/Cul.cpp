@@ -149,20 +149,42 @@ void Cul::listen()
 				}
 				else if(result == 1)
 				{
-					/*std::vector<std::string> data{ "i1045510D\r\n", "i1045540D\r\n", "i10515114\r\n", "i1051540D\r\n", "i1054510D\r\n", "i1054540D\r\n", "i1055110D\r\n", "i1055140D\r\n" };
-					int32_t index = BaseLib::HelperFunctions::getRandomNumber(0, 7);
-					processPacket(data.at(index));
-					_lastPacketReceived = BaseLib::HelperFunctions::getTime();*/
-					/*if(BaseLib::HelperFunctions::getTimeSeconds() % 10 == 0)
+#ifdef DEBUG
+					//std::vector<std::string> data{ "i1045510D\r\n", "i1045540D\r\n", "i10515114\r\n", "i1051540D\r\n", "i1054510D\r\n", "i1054540D\r\n", "i1055110D\r\n", "i1055140D\r\n" };
+					// Debug CULTX
+					std::vector<std::string> data
 					{
-						std::vector<std::string> data{ "i4500140D\r\n", "i4500150D\r\n", "i4540140D\r\n", "i4540150D\r\n", "i4510140D\r\n", "i4510150D\r\n", "i4550140D\r\n", "i4550150D\r\n", "i4504140D\r\n", "i4504150D\r\n", "i4544140D\r\n", "i4544150D\r\n", "i4514140D\r\n", "i4514150D\r\n", "i4554140D\r\n", "i4554150D\r\n", "i4501140D\r\n", "i4501150D\r\n", "i4541140D\r\n", "i4541150D\r\n", "i4511140D\r\n", "i4511150D\r\n", "i4551140D\r\n", "i4551150D\r\n", "i4505140D\r\n", "i4505150D\r\n", "i4545140D\r\n", "i4545150D\r\n", "i4515140D\r\n", "i4515150D\r\n", "i4555140D\r\n", "i4555150D\r\n"  };
-						for(uint32_t i = 0; i < data.size(); i++)
-						{
-							processPacket(data.at(i));
-							_lastPacketReceived = BaseLib::HelperFunctions::getTime();
-						}
-						std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-					}*/
+					"tAEFD49049E0F\r\n",
+					"tAE1134034807\r\n",
+					"tA0FD7287202C\r\n",
+					"tA01077577C11\r\n",
+					"tAE1134034809\r\n",
+					"tA01077577C0A\r\n",
+					"tAEFD49049E37\r\n",
+					"tA01077577CFC\r\n",
+					"tAE11340348FD\r\n",
+					"tAED357057011\r\n",
+					"tA0FC72972038\r\n",
+					"tAEFD49049E38\r\n",
+					"tAED35705700A\r\n",
+					"tA01077577C07\r\n",
+					"tAE1134034804\r\n",
+					"tA0FC7297203A\r\n",
+					"tA01077577C09\r\n",
+					"tA01077577C09\r\n",
+					"tAE1134034807\r\n",
+					"tAED35705700A\r\n",
+					"tA01077577C08\r\n",
+					"tAE1134034809\r\n",
+					"tAED35705700B\r\n",
+					"tA0FC73173A3A\r\n"
+					};
+
+					int32_t index = BaseLib::HelperFunctions::getRandomNumber(0, data.size()-1);
+					processPacket(data.at(index));
+					_lastPacketReceived = BaseLib::HelperFunctions::getTime();
+					std::this_thread::sleep_for(std::chrono::milliseconds(3000));
+#endif
 					continue;
 				}
 
@@ -185,17 +207,34 @@ void Cul::processPacket(std::string& data)
 {
 	try
 	{
+		std::shared_ptr<BaseLib::Systems::Packet> packet = nullptr;
+
 	    if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Raw packet received: " + BaseLib::HelperFunctions::trim(data));
 
-		if(data.size() < 6 || data.at(0) != 'i')
+	    // CULTX
+	    if(data.size() > 9 && data.at(0) == 't' && (data.at(5) == data.at(8) || data.at(6) == data.at(9)))
 		{
-		    if(data.compare(0, 4, "LOVF") == 0) _out.printWarning("Warning: CUL with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
-		    else _out.printInfo("Info: Unknown IT packet received: " + data);
-            return;
-        }
+	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized CULTX packet");
+			packet = std::make_shared<MyCulTxPacket>(data);
+			packet->setTag(GD::CULTX);
+			raisePacketReceived(packet);
+			return;
+		}
 
-		PMyPacket packet(new MyPacket(data));
-		raisePacketReceived(packet);
+	    // Intertechno
+	    if(data.size() > 6 && data.at(0) == 'i') {
+	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized Intertechno packet");
+	    	packet = std::make_shared<MyPacket>(data);
+	    	packet->setTag(GD::INTERTECHNO);
+	    	raisePacketReceived(packet);
+	    	return;
+	    }
+
+	    // Not recognized
+		if(data.compare(0, 4, "LOVF") == 0) _out.printWarning("Warning: CUL with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
+		else _out.printInfo("Info: Unknown IT packet received: " + data);
+		return;
+
 	}
 	catch(const std::exception& ex)
     {
@@ -238,6 +277,8 @@ void Cul::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 
 		_serial->writeData(data);
 		_lastPacketSent = BaseLib::HelperFunctions::getTime();
+		// Sleep as CUL cannot handle too much commands in short time
+		std::this_thread::sleep_for(std::chrono::milliseconds(500));
 	}
 	catch(const std::exception& ex)
     {

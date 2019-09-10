@@ -37,11 +37,13 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include "MyCulTxPacket.h"
 
 namespace MyFamily
 {
 
-class MyCentral : public BaseLib::Systems::ICentral
+class MyCentral
+    : public BaseLib::Systems::ICentral
 {
 public:
 	MyCentral(ICentralEventSink* eventHandler);
@@ -56,10 +58,14 @@ public:
 	std::shared_ptr<MyPeer> getPeer(int32_t address);
 	std::shared_ptr<MyPeer> getPeer(std::string serialNumber);
 
+	bool processPacket(const std::string& senderId, std::shared_ptr<MyPacket> myPacket);
+	bool processPacket(const std::string& senderId, std::shared_ptr<MyCulTxPacket> myPacket);
+
 	virtual PVariable createDevice(BaseLib::PRpcClientInfo clientInfo, int32_t deviceType, std::string serialNumber, int32_t address, int32_t firmwareVersion, std::string interfaceId);
 	virtual PVariable deleteDevice(BaseLib::PRpcClientInfo clientInfo, std::string serialNumber, int32_t flags);
 	virtual PVariable deleteDevice(BaseLib::PRpcClientInfo clientInfo, uint64_t peerId, int32_t flags);
 	virtual PVariable setInterface(BaseLib::PRpcClientInfo clientInfo, uint64_t peerId, std::string interfaceId);
+
 protected:
 	virtual void init();
 	virtual void loadPeers();

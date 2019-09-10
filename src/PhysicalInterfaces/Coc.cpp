@@ -29,6 +29,7 @@
 
 #include "Coc.h"
 #include "../GD.h"
+#include "../MyCulTxPacket.h"
 #include "../MyPacket.h"
 
 namespace MyFamily
@@ -169,14 +170,33 @@ void Coc::lineReceived(const std::string& data)
 			else packetHex = data.substr(_stackPrefix.size());
 		}
 		
-		if(packetHex.size() < 6 || packetHex.at(0) != 'i')
-		{
-		    if(packetHex == "LOVF\n") _out.printWarning("Warning: COC with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
-            return;
-        }
+		std::shared_ptr<BaseLib::Systems::Packet> packet = nullptr;
 
-		PMyPacket packet(new MyPacket(packetHex));
-		raisePacketReceived(packet);
+	    // CULTX
+	    if(packetHex.size() > 9 && packetHex.at(0) == 't' && (packetHex.at(5) == packetHex.at(8) || packetHex.at(6) == packetHex.at(9)))
+		{
+	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized CULTX packet");
+			 packet = std::make_shared<MyCulTxPacket>(packetHex);
+			 packet->setTag(GD::CULTX);
+			raisePacketReceived(packet);
+			return;
+		}
+
+	    // Intertechno
+	    if(packetHex.size() > 6 && packetHex.at(0) == 'i') {
+	    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized Intertechno packet");
+	    	packet = std::make_shared<MyPacket>(packetHex);
+	    	packet->setTag(GD::INTERTECHNO);
+	    	raisePacketReceived(packet);
+	    	return;
+	    }
+
+	    // Not recognized
+		if(packetHex == "LOVF\n") _out.printWarning("Warning: COC with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
+		else _out.printInfo("Info: Unknown IT packet received: " + packetHex);
+		return;
+
+
     }
     catch(const std::exception& ex)
     {

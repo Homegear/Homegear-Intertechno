@@ -26,6 +26,8 @@ set(SOURCE_FILES
         src/MyFamily.h
         src/MyPacket.cpp
         src/MyPacket.h
+        src/MyCulTxPacket.cpp
+        src/MyCulTxPacket.h
         src/MyPeer.cpp
         src/MyPeer.h
         config.h)
