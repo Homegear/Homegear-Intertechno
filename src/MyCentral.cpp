@@ -251,13 +251,66 @@ std::pair<int32_t, int32_t> MyCentral::getOldItGroupStartCodeAndChannel(int32_t 
     return returnValue;
 }
 
+
 bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib::Systems::Packet> packet)
+{
+		if(_disposing) return false;
+
+		if(packet->getTag() == GD::INTERTECHNO) {
+			auto receivedPacket = std::dynamic_pointer_cast<MyPacket>(packet);
+			if(!receivedPacket) return false;
+			return processPacket(senderId,receivedPacket);
+		}
+
+		if(packet->getTag() == GD::CULTX) {
+			auto receivedPacket = std::dynamic_pointer_cast<MyCulTxPacket>(packet);
+			if(!receivedPacket) return false;
+			return processPacket(senderId,receivedPacket);
+		}
+
+		return false;
+}
+
+
+bool MyCentral::processPacket(const std::string& senderId, std::shared_ptr<MyCulTxPacket> myPacket)
 {
 	try
 	{
-		if(_disposing) return false;
-		PMyPacket myPacket(std::dynamic_pointer_cast<MyPacket>(packet));
-		if(!myPacket) return false;
+		if(GD::bl->debugLevel >= 4) _bl->out.printDebug(BaseLib::HelperFunctions::getTimeString(myPacket->getTimeReceived()) + " CULTX packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) + " :" + myPacket->getPayload());
+		std::vector<std::shared_ptr<BaseLib::Systems::Peer>> peers = getPeers();
+		uint8_t processed = 0;
+		for(auto peer : peers)
+		{
+			PMyPeer myPeer = std::dynamic_pointer_cast<MyPeer>(peer);
+			if(senderId != myPeer->getPhysicalInterfaceId()) return false;
+			if(myPeer->getAddress() == myPacket->senderAddress()) {
+				myPeer->packetReceived(myPacket);
+				processed = 1;
+				break;
+			}
+		}
+		if(processed == 0 && GD::bl->debugLevel >= 4) _bl->out.printInfo(BaseLib::HelperFunctions::getTimeString(myPacket->getTimeReceived()) + " CULTX packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) + "; Device not yet added to database.");
+
+	}
+	catch(const std::exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(BaseLib::Exception& ex)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+    }
+    catch(...)
+    {
+        GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+    }
+    return false;
+}
+
+bool MyCentral::processPacket(const std::string& senderId, std::shared_ptr<MyPacket> myPacket)
+{
+	try
+	{
 
 		if(GD::bl->debugLevel >= 4) _bl->out.printInfo(BaseLib::HelperFunctions::getTimeString(myPacket->getTimeReceived()) + " Intertechno packet received from " + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) + " (RSSI: " + std::to_string(((int32_t)myPacket->getRssi()) * -1) + " dBm): " + myPacket->getPayload());
 
@@ -334,7 +387,7 @@ bool MyCentral::onPacketReceived(std::string& senderId, std::shared_ptr<BaseLib:
 				peer = getPeer((int32_t)(0x80000000 | myPacket->senderAddress()));
 				if(!peer)
                 {
-                    if(GD::bl->debugLevel >= 4) _bl->out.printInfo(BaseLib::HelperFunctions::getTimeString(myPacket->getTimeReceived()) + " Please use one of the following addresses for device creation (possible device types: 0x10 to 0x1F): 0x" + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) + " or 0x" + BaseLib::HelperFunctions::getHexString((int32_t)(0x80000000 | myPacket->senderAddress()), 8));
+					if(GD::bl->debugLevel >= 4) _bl->out.printInfo(BaseLib::HelperFunctions::getTimeString(myPacket->getTimeReceived()) + " Please use one of the following addresses for device creation (possible device types: 0x10 to 0x1F): 0x" + BaseLib::HelperFunctions::getHexString(myPacket->senderAddress(), 8) + " or 0x" + BaseLib::HelperFunctions::getHexString((int32_t)(0x80000000 | myPacket->senderAddress()), 8));
                     return false;
                 }
 			}

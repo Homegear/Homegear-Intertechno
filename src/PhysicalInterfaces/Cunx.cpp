@@ -30,6 +30,7 @@
 #include "Cunx.h"
 #include <homegear-base/BaseLib.h>
 #include "../GD.h"
+#include "../MyCulTxPacket.h"
 #include "../MyPacket.h"
 
 namespace MyFamily
@@ -255,14 +256,31 @@ void Cunx::processData(std::vector<uint8_t>& data)
 		std::string packetHex;
 		while(std::getline(stringStream, packetHex))
 		{
-			if(packetHex.size() < 6 || packetHex.at(0) != 'i')
+
+		    // CULTX
+		    if(packetHex.size() > 9 && packetHex.at(0) == 't' && (packetHex.at(5) == packetHex.at(8) || packetHex.at(6) == packetHex.at(9)))
 			{
-				if(packetHex == "LOVF\n") _out.printWarning("Warning: CUNX with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
-				return;
+		    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized CULTX packet");
+		    	PMyCulTxPacket packet = std::make_shared<MyCulTxPacket>(packetHex);
+		    	packet->setTag(GD::CULTX);
+				raisePacketReceived(packet);
+				continue;
 			}
 
-			PMyPacket packet(new MyPacket(packetHex));
-			raisePacketReceived(packet);
+		    // Intertechno
+		    if(packetHex.size() > 6 && packetHex.at(0) == 'i') {
+		    	if(GD::bl->debugLevel >= 5) _out.printDebug("Debug: Recognized Intertechno packet");
+		    	PMyPacket packet = std::make_shared<MyPacket>(packetHex);
+		    	packet->setTag(GD::INTERTECHNO);
+		    	raisePacketReceived(packet);
+		    	continue;
+		    }
+
+		    // Not recognized
+			if(packetHex == "LOVF\n") _out.printWarning("Warning: CUNX with id " + _settings->id + " reached 1% limit. You need to wait, before sending is allowed again.");
+			else _out.printInfo("Info: Unknown IT packet received: " + packetHex);
+			continue;
+
 		}
 	}
     catch(const std::exception& ex)

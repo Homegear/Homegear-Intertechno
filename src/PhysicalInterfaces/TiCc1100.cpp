@@ -32,6 +32,7 @@
 #ifdef SPISUPPORT
 #include "../GD.h"
 #include "../MyPacket.h"
+#include "../MyCulTxPacket.h"
 
 namespace MyFamily
 {
@@ -584,6 +585,7 @@ void TiCc1100::mainThread()
 					if(_sending) endSending();
 					else
 					{
+						//TODO: Include CULTX recognition
 						std::shared_ptr<MyPacket> packet;
 						if(crcOK())
 						{

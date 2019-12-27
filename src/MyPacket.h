@@ -50,6 +50,7 @@ class MyPacket : public BaseLib::Systems::Packet
         void setPacket(std::string& value) { _packet = value; }
         std::string& hexString();
         uint8_t getRssi() { return _rssi; }
+
     protected:
         int32_t _senderAddress = 0;
         std::string _packet;
