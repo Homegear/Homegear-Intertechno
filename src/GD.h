@@ -50,6 +50,7 @@ public:
 	static std::map<std::string, std::shared_ptr<IIntertechnoInterface>> physicalInterfaces;
 	static std::shared_ptr<IIntertechnoInterface> defaultPhysicalInterface;
 	static BaseLib::Output out;
+	enum packetType { INTERTECHNO, CULTX };
 private:
 	GD();
 };

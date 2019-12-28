@@ -27,37 +27,43 @@
  * files in the program, then also delete it here.
  */
 
-#ifndef CUL_H_
-#define CUL_H_
+#ifndef MYCULTXPACKET_H_
+#define MYCULTXPACKET_H_
 
-#include "../MyPacket.h"
 #include <homegear-base/BaseLib.h>
 
-#include "../MyCulTxPacket.h"
-#include "IIntertechnoInterface.h"
 
 namespace MyFamily
 {
 
-class Cul : public IIntertechnoInterface
+class MyCulTxPacket : public BaseLib::Systems::Packet
 {
-public:
-	Cul(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings);
-	virtual ~Cul();
+    public:
+	MyCulTxPacket();
+	MyCulTxPacket(std::string& rawPacket);
+	MyCulTxPacket(int32_t senderAddress, std::string& payload);
+        virtual ~MyCulTxPacket();
 
-	virtual void startListening();
-	virtual void stopListening();
-	virtual void setup(int32_t userID, int32_t groupID, bool setPermissions);
-	virtual bool isOpen() { return _serial && _serial->isOpen() && !_stopped; }
+        int32_t senderAddress() { return _senderAddress; }
+        int32_t getChannel() { return _channel; }
+        void setChannel(int32_t value) { _channel = value; }
+        std::string getPayload() { return _payload; }
+        void setPacket(std::string& value) { _packet = value; }
+        std::string hexString();
+        uint8_t getRssi() { return _rssi; }
+        uint8_t getType() { return _type; }
 
-	virtual void sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet);
-protected:
-	std::unique_ptr<BaseLib::SerialReaderWriter> _serial;
+    protected:
+        int32_t _senderAddress = 0;
+        std::string _packet;
+        std::string _payload;
+        int32_t _channel = -1;
+        uint8_t _rssi = 0;
+        int32_t _type = -1;
 
-	void listen();
-	void processPacket(std::string& data);
 };
 
-}
+typedef std::shared_ptr<MyCulTxPacket> PMyCulTxPacket;
 
+}
 #endif

@@ -34,6 +34,7 @@
 #include "MyCentral.h"
 
 #include <iomanip>
+#include "MyCulTxPacket.h"
 
 namespace MyFamily
 {
@@ -396,6 +397,83 @@ void MyPeer::setRssiDevice(uint8_t rssi)
     {
     	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
     }
+}
+
+
+void MyPeer::packetReceived(PMyCulTxPacket& packet)
+{
+	try
+		{
+			if(!packet) return;
+			if(_disposing) return;
+			if(!_rpcDevice) return;
+			std::shared_ptr<MyCentral> central = std::dynamic_pointer_cast<MyCentral>(getCentral());
+			if(!central) return;
+			setLastPacketReceived();
+			//TODO: RSSI value?
+			//setRssiDevice(packet->getRssi() * -1);
+			serviceMessages->endUnreach();
+
+
+			std::map<uint32_t, std::shared_ptr<std::vector<std::string>>> valueKeys;
+			std::map<uint32_t, std::shared_ptr<std::vector<PVariable>>> rpcValues;
+
+			std::unordered_map<uint32_t, std::unordered_map<std::string, BaseLib::Systems::RpcConfigurationParameter>>::iterator channelIterator;
+			std::unordered_map<std::string, BaseLib::Systems::RpcConfigurationParameter>::iterator parameterIterator;
+
+			std::string valueKey;
+			int32_t channel = 0;
+			std::string payload = packet->getPayload();
+
+			if(packet->getType() == 0) valueKey = "TEMPERATURE";
+			else if(packet->getType() == 14) valueKey = "HUMIDITY";
+
+			channelIterator = valuesCentral.find(channel);
+			if(channelIterator == valuesCentral.end()) return;
+			parameterIterator= channelIterator->second.find(valueKey);
+			if(parameterIterator == channelIterator->second.end()) return;
+
+			valueKeys[channel].reset(new std::vector<std::string>());
+			rpcValues[channel].reset(new std::vector<PVariable>());
+
+			std::vector<uint8_t> parameterData;
+			parameterIterator->second.rpcParameter->convertToPacket(payload,parameterData);
+			parameterIterator->second.setBinaryData(parameterData);
+
+			if(parameterIterator->second.databaseId > 0) saveParameter(parameterIterator->second.databaseId, parameterData);
+			else saveParameter(0, ParameterGroup::Type::Enum::variables, channel, valueKey, parameterData);
+			if(_bl->debugLevel >= 4) GD::out.printInfo("Info: " + valueKey + " on channel " + std::to_string(channel) + " of peer " + std::to_string(_peerID) + " with serial number " + _serialNumber  + " was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
+
+			if(parameterIterator->second.rpcParameter)
+			{
+				valueKeys[channel]->push_back(valueKey);
+				rpcValues[channel]->push_back(parameterIterator->second.rpcParameter->convertFromPacket(parameterData, true));
+			}
+
+			if(!rpcValues.empty())
+			{
+				for(std::map<uint32_t, std::shared_ptr<std::vector<std::string>>>::iterator j = valueKeys.begin(); j != valueKeys.end(); ++j)
+				{
+					if(j->second->empty()) continue;
+					std::string address(_serialNumber + ":" + std::to_string(j->first));
+	                std::string eventSource = "device-" + std::to_string(_peerID);
+	                raiseEvent(eventSource, _peerID, j->first, j->second, rpcValues.at(j->first));
+	                raiseRPCEvent(eventSource, _peerID, j->first, address, j->second, rpcValues.at(j->first));
+				}
+			}
+		}
+		catch(const std::exception& ex)
+	    {
+	    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+	    }
+	    catch(BaseLib::Exception& ex)
+	    {
+	    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__, ex.what());
+	    }
+	    catch(...)
+	    {
+	    	GD::out.printEx(__FILE__, __LINE__, __PRETTY_FUNCTION__);
+	    }
 }
 
 void MyPeer::packetReceived(PMyPacket& packet)
