@@ -357,7 +357,7 @@ bool MyPeer::load(BaseLib::Systems::ICentral* central)
 			if(parameterIterator != channelIterator->second.end() && parameterIterator->second.rpcParameter)
 			{
 				std::vector<uint8_t> parameterData = parameterIterator->second.getBinaryData();
-				_address = parameterIterator->second.rpcParameter->convertFromPacket(parameterData)->booleanValue;
+				_address = parameterIterator->second.rpcParameter->convertFromPacket(parameterData, parameterIterator->second.invert(), false)->booleanValue;
 			}
 		}
 
@@ -385,7 +385,7 @@ void MyPeer::setRssiDevice(uint8_t rssi)
 
 			std::shared_ptr<std::vector<std::string>> valueKeys(new std::vector<std::string>({std::string("RSSI_DEVICE")}));
 			std::shared_ptr<std::vector<PVariable>> rpcValues(new std::vector<PVariable>());
-			rpcValues->push_back(parameter.rpcParameter->convertFromPacket(parameterData));
+			rpcValues->push_back(parameter.rpcParameter->convertFromPacket(parameterData, parameter.invert(), false));
 
             std::string eventSource = "device-" + std::to_string(_peerID);
             std::string address = _serialNumber + ":0";
@@ -437,7 +437,7 @@ void MyPeer::packetReceived(PMyCulTxPacket& packet)
 			rpcValues[channel].reset(new std::vector<PVariable>());
 
 			std::vector<uint8_t> parameterData;
-			parameterIterator->second.rpcParameter->convertToPacket(payload,parameterData);
+			parameterIterator->second.rpcParameter->convertToPacket(payload, parameterIterator->second.invert(), parameterData);
 			parameterIterator->second.setBinaryData(parameterData);
 
 			if(parameterIterator->second.databaseId > 0) saveParameter(parameterIterator->second.databaseId, parameterData);
@@ -447,7 +447,7 @@ void MyPeer::packetReceived(PMyCulTxPacket& packet)
 			if(parameterIterator->second.rpcParameter)
 			{
 				valueKeys[channel]->push_back(valueKey);
-				rpcValues[channel]->push_back(parameterIterator->second.rpcParameter->convertFromPacket(parameterData, true));
+				rpcValues[channel]->push_back(parameterIterator->second.rpcParameter->convertFromPacket(parameterData, parameterIterator->second.invert(), true));
 			}
 
 			if(!rpcValues.empty())
@@ -519,7 +519,7 @@ void MyPeer::packetReceived(PMyPacket& packet)
 		if(parameterIterator->second.rpcParameter)
 		{
 			valueKeys[channel]->push_back(valueKey);
-			rpcValues[channel]->push_back(parameterIterator->second.rpcParameter->convertFromPacket(parameterData, true));
+			rpcValues[channel]->push_back(parameterIterator->second.rpcParameter->convertFromPacket(parameterData, parameterIterator->second.invert(), true));
 		}
 
 		if(!rpcValues.empty())
@@ -565,8 +565,9 @@ bool MyPeer::getAllValuesHook2(PRpcClientInfo clientInfo, PParameter parameter, 
 			if(parameter->id == "PEER_ID")
 			{
 				std::vector<uint8_t> parameterData;
-				parameter->convertToPacket(PVariable(new Variable((int32_t)_peerID)), parameterData);
-				valuesCentral[channel][parameter->id].setBinaryData(parameterData);
+				auto& rpcConfigurationParameter = valuesCentral[channel][parameter->id];
+				parameter->convertToPacket(PVariable(new Variable((int32_t)_peerID)), rpcConfigurationParameter.invert(), parameterData);
+                rpcConfigurationParameter.setBinaryData(parameterData);
 			}
 		}
 	}
@@ -586,8 +587,9 @@ bool MyPeer::getParamsetHook2(PRpcClientInfo clientInfo, PParameter parameter, u
 			if(parameter->id == "PEER_ID")
 			{
 				std::vector<uint8_t> parameterData;
-				parameter->convertToPacket(PVariable(new Variable((int32_t)_peerID)), parameterData);
-				valuesCentral[channel][parameter->id].setBinaryData(parameterData);
+                auto& rpcConfigurationParameter = valuesCentral[channel][parameter->id];
+				parameter->convertToPacket(PVariable(new Variable((int32_t)_peerID)), rpcConfigurationParameter.invert(), parameterData);
+                rpcConfigurationParameter.setBinaryData(parameterData);
 			}
 		}
 	}
@@ -626,7 +628,7 @@ PVariable MyPeer::putParamset(BaseLib::PRpcClientInfo clientInfo, int32_t channe
 				if(!parameter.rpcParameter) continue;
 				if(parameter.rpcParameter->password && i->second->stringValue.empty()) continue; //Don't safe password if empty
 				std::vector<uint8_t> parameterData;
-				parameter.rpcParameter->convertToPacket(i->second, parameterData);
+				parameter.rpcParameter->convertToPacket(i->second, parameter.invert(), parameterData);
 				parameter.setBinaryData(parameterData);
 				if(parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
 				else saveParameter(0, ParameterGroup::Type::Enum::config, channel, i->first, parameterData);
@@ -707,7 +709,7 @@ PVariable MyPeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t channel,
 		if(rpcParameter->physical->operationType == IPhysical::OperationType::Enum::store)
 		{
 			std::vector<uint8_t> parameterData;
-			rpcParameter->convertToPacket(value, parameterData);
+			rpcParameter->convertToPacket(value, parameter.invert(), parameterData);
 			parameter.setBinaryData(parameterData);
 			if(parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
 			else saveParameter(0, ParameterGroup::Type::Enum::variables, channel, valueKey, parameterData);
@@ -722,12 +724,12 @@ PVariable MyPeer::setValue(BaseLib::PRpcClientInfo clientInfo, uint32_t channel,
 		else if(rpcParameter->physical->operationType != IPhysical::OperationType::Enum::command) return Variable::createError(-6, "Parameter is not settable.");
 
 		std::vector<uint8_t> parameterData;
-		rpcParameter->convertToPacket(value, parameterData);
+		rpcParameter->convertToPacket(value, parameter.invert(), parameterData);
 		parameter.setBinaryData(parameterData);
 		if(parameter.databaseId > 0) saveParameter(parameter.databaseId, parameterData);
 		else saveParameter(0, ParameterGroup::Type::Enum::variables, channel, valueKey, parameterData);
 		if(_bl->debugLevel >= 4) GD::out.printInfo("Info: " + valueKey + " of peer " + std::to_string(_peerID) + " with serial number " + _serialNumber + ":" + std::to_string(channel) + " was set to 0x" + BaseLib::HelperFunctions::getHexString(parameterData) + ".");
-		value = rpcParameter->convertFromPacket(parameterData, false);
+		value = rpcParameter->convertFromPacket(parameterData, parameter.invert(), false);
 
 		PMyPacket packet;
 		if(valueKey == "STATE")
