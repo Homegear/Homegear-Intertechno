@@ -71,21 +71,27 @@ void Cul::startListening()
 		}
 
 		if(_settings->baudrate <= 0) _settings->baudrate = 57600;
-		_serial.reset(new BaseLib::SerialReaderWriter(_bl, _settings->device, _settings->baudrate, 0, true, -1));
+		_serial.reset(new BaseLib::SerialReaderWriter(_bl, _settings->device, _settings->baudrate, 0, true, -1, _settings->openWriteonly));
 		_serial->openDevice(false, false, false);
 		if(!_serial->isOpen())
 		{
 			_out.printError("Error: Could not open device.");
 			return;
 		}
-		std::string listenPacket = "X21\r\n";
-		_serial->writeLine(listenPacket);
+        if(!_settings->openWriteonly)
+        {
+            std::string listenPacket = "X21\r\n";
+            _serial->writeLine(listenPacket);
+        }
 		if(!_additionalCommands.empty()) _serial->writeLine(_additionalCommands);
 
 		_stopCallbackThread = false;
 		_stopped = false;
-		if(_settings->listenThreadPriority > -1) _bl->threadManager.start(_listenThread, true, _settings->listenThreadPriority, _settings->listenThreadPolicy, &Cul::listen, this);
-		else _bl->threadManager.start(_listenThread, true, &Cul::listen, this);
+		if(!_settings->openWriteonly)
+        {
+            if(_settings->listenThreadPriority > -1) _bl->threadManager.start(_listenThread, true, _settings->listenThreadPriority, _settings->listenThreadPolicy, &Cul::listen, this);
+            else _bl->threadManager.start(_listenThread, true, &Cul::listen, this);
+        }
 		IPhysicalInterface::startListening();
 	}
     catch(const std::exception& ex)
@@ -264,8 +270,11 @@ void Cul::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 				_out.printError("Error: Could not open device.");
 				return;
 			}
-			std::string listenPacket = "X21\r\n";
-			_serial->writeLine(listenPacket);
+			if(!_settings->openWriteonly)
+            {
+                std::string listenPacket = "X21\r\n";
+                _serial->writeLine(listenPacket);
+            }
 			if(!_additionalCommands.empty()) _serial->writeLine(_additionalCommands);
 		}
 
