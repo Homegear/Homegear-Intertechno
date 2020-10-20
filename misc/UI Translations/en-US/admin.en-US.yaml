@@ -1,0 +1,27 @@
+---
+# {{{ Pairing info
+l10n.intertechno.pairingInfo.centraladdress: 'Address of central'
+l10n.intertechno.pairingInfo.aeskey: 'AES key'
+l10n.intertechno.pairingInfo.currentrfkeyindex: 'Current AES key index'
+l10n.intertechno.pairingInfo.oldaeskey: 'Last AES key index'
+l10n.intertechno.pairingInfo.processbroadcastwithaesenabled: 'Process insecure status messages'
+l10n.intertechno.pairingInfo.id: 'ID'
+l10n.intertechno.pairingInfo.hostname: 'IP-Address'
+l10n.intertechno.pairingInfo.password: 'Password'
+l10n.intertechno.pairingInfo.default: 'Default'
+l10n.intertechno.pairingInfo.device: 'Device'
+l10n.intertechno.pairingInfo.gpio1: 'GPIO 1'
+l10n.intertechno.pairingInfo.gpio2: 'GPIO 2'
+l10n.intertechno.pairingInfo.stackposition: 'Stack position'
+l10n.intertechno.pairingInfo.interruptpin: 'Interrupt pin'
+l10n.intertechno.pairingInfo.key: 'Key'
+l10n.intertechno.pairingInfo.sendfix: 'Send fix'
+l10n.intertechno.pairingInfo.additionalcommands: 'Additional initialization commands'
+# }}}
+
+# {{{ Pairing
+l10n.intertechno.pairing.alreadyPaired: 'This peer is already paired to central with address 0x%variable0%.'
+l10n.intertechno.pairing.samePeer: 'A peer with the same address but different serial number or device type is already paired to this central.'
+l10n.intertechno.pairing.unsupportedDeviceType: 'Device type 0x%variable0% is not supported.'
+l10n.intertechno.pairing.unknownError: 'Unknown error during pairing.'
+# }}}
