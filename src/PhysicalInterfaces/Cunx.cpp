@@ -41,6 +41,21 @@ Cunx::Cunx(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings
 	_out.init(GD::bl);
 	_out.setPrefix(GD::out.getPrefix() + "CUNX \"" + settings->id + "\": ");
 
+	stackPrefix = "";
+	for (uint32_t i = 1; i < settings->stackPosition; i++) {
+	  stackPrefix.push_back('*');
+	}
+
+	// Fix up _additionalCommands
+	_additionalCommands.clear();
+
+	std::vector<std::string> additionalCommands = BaseLib::HelperFunctions::splitAll(settings->additionalCommands, ',');
+	for(std::string& command : additionalCommands)
+	{
+		BaseLib::HelperFunctions::trim(command);
+		_additionalCommands += stackPrefix + command + "\r\n";
+	}
+
 	signal(SIGPIPE, SIG_IGN);
 
 	_socket = std::unique_ptr<BaseLib::TcpSocket>(new BaseLib::TcpSocket(_bl));
@@ -79,7 +94,7 @@ void Cunx::sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet)
 		}
 
 		_out.printInfo("Info: Sending (" + _settings->id + "): " + myPacket->hexString());
-		send("is" + myPacket->hexString() + "\n");
+		send(stackPrefix + "is" + myPacket->hexString() + "\n");
 		
 		_lastPacketSent = BaseLib::HelperFunctions::getTime();
 	}
@@ -143,8 +158,8 @@ void Cunx::reconnect()
 		_hostname = _settings->host;
 		_ipAddress = _socket->getIpAddress();
 		_stopped = false;
-		send("X21\r\n");
-		if(!_additionalCommands.empty()) send(_additionalCommands);
+		send(stackPrefix + "X21\r\n");
+		if(!_additionalCommands.empty()) send(_additionalCommands); // _additionalCommands already contain stackPrefix
 		_out.printInfo("Connected to CUNX device with hostname " + _settings->host + " on port " + _settings->port + ".");
 	}
     catch(const std::exception& ex)
@@ -255,6 +270,13 @@ void Cunx::processData(std::vector<uint8_t>& data)
 		std::string packetHex;
 		while(std::getline(stringStream, packetHex))
 		{
+		    if (stackPrefix.empty()) {
+		      if(packetHex.size() > 0 && packetHex.at(0) == '*') return;
+		    } else {
+		      if (packetHex.size() + 1 <= stackPrefix.size()) return;
+		      if (packetHex.substr(0, stackPrefix.size()) != stackPrefix || packetHex.at(stackPrefix.size()) == '*') return;
+		      else packetHex = packetHex.substr(stackPrefix.size());
+		    }
 
 		    // CULTX
 		    if(packetHex.size() > 9 && packetHex.at(0) == 't' && (packetHex.at(5) == packetHex.at(8) || packetHex.at(6) == packetHex.at(9)))
