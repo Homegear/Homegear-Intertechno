@@ -1,0 +1,20 @@
+---
+# {{{ Pairing info
+l10n.intertechno.pairingInfo.centraladdress: 'Zentralenadresse'
+l10n.intertechno.pairingInfo.aeskey: 'AES-Schlüssel'
+l10n.intertechno.pairingInfo.currentrfkeyindex: 'Aktueller AES-Schlüsselindex'
+l10n.intertechno.pairingInfo.oldaeskey: 'Letzter AES-Schlüsselindex'
+l10n.intertechno.pairingInfo.processbroadcastwithaesenabled: 'Verarbeite unsichere Statusmeldungen'
+l10n.intertechno.pairingInfo.id: 'ID'
+l10n.intertechno.pairingInfo.hostname: 'IP-Adresse'
+l10n.intertechno.pairingInfo.password: 'Kennwort'
+l10n.intertechno.pairingInfo.default: 'Standard'
+l10n.intertechno.pairingInfo.device: 'Gerät'
+l10n.intertechno.pairingInfo.gpio1: 'GPIO 1'
+l10n.intertechno.pairingInfo.gpio2: 'GPIO 2'
+l10n.intertechno.pairingInfo.stackposition: 'Stapelposition'
+l10n.intertechno.pairingInfo.interruptpin: 'Interrupt-Pin'
+l10n.intertechno.pairingInfo.key: 'Schlüssel'
+l10n.intertechno.pairingInfo.sendfix: 'Sendefix'
+l10n.intertechno.pairingInfo.additionalcommands: 'Zusätzliche Initialisierungsbefehle'
+# }}}

@@ -13,6 +13,11 @@ override_dh_auto_install:
 	chmod 755 $(CURDIR)/debian/homegear-intertechno/etc/homegear/devices/16
 	chmod 644 $(CURDIR)/debian/homegear-intertechno/etc/homegear/devices/16/*
 
+	mkdir -p $(CURDIR)/debian/homegear-intertechno/var/lib/homegear/admin-ui/translations/modules/intertechno
+	cp -R $(CURDIR)/misc/UI\ Translations/* $(CURDIR)/debian/homegear-intertechno/var/lib/homegear/admin-ui/translations/modules/intertechno
+	chown -R root:root $(CURDIR)/debian/homegear-intertechno/var/lib/homegear/admin-ui/translations/modules/intertechno
+	chmod -R 555 $(CURDIR)/debian/homegear-intertechno/var/lib/homegear/admin-ui/translations/modules/intertechno
+
 override_dh_strip:
 	dh_strip --dbg-package=homegear-intertechno
 
