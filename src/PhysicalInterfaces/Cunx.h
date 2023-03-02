@@ -43,13 +43,13 @@ class Cunx : public IIntertechnoInterface
         virtual ~Cunx();
         void startListening();
         void stopListening();
-        virtual bool isOpen() { return _socket->connected(); }
+        virtual bool isOpen() { return _socket->Connected(); }
 		
 		void sendPacket(std::shared_ptr<BaseLib::Systems::Packet> packet);
     protected:
         BaseLib::Output _out;
         std::string _port;
-        std::unique_ptr<BaseLib::TcpSocket> _socket;
+        std::unique_ptr<C1Net::TcpSocket> _socket;
         std::string stackPrefix;
 
         void reconnect();
