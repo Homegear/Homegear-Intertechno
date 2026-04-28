@@ -30,6 +30,8 @@
 #ifndef CUL_H_
 #define CUL_H_
 
+#include <cstdint>
+
 #include "../MyPacket.h"
 #include <homegear-base/BaseLib.h>
 

@@ -30,6 +30,8 @@
 #ifndef MYCULTXPACKET_H_
 #define MYCULTXPACKET_H_
 
+#include <cstdint>
+
 #include <homegear-base/BaseLib.h>
 
 
