@@ -30,6 +30,8 @@
 #ifndef TICC1100_H_
 #define TICC1100_H_
 
+#include <cstdint>
+
 #ifdef SPISUPPORT
 
 #include <homegear-base/BaseLib.h>
